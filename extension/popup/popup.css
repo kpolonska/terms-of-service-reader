@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  width: 380px;
+  min-height: 120px;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #f9f9f9;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+}
+
+/* States */
+.state {
+  padding: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+.muted {
+  color: #888;
+  font-size: 12px;
+}
+
+.error-msg {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+/* Loading spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e5e5e5;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* TLDR */
+#tldr-section {
+  margin-bottom: 12px;
+}
+
+#tldr-section h2,
+#clauses-section h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+#tldr-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* Clause cards */
+#clauses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.clause-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 10px 12px;
+  border-left-width: 4px;
+}
+
+.clause-card.severity-low { border-left-color: #27ae60; }
+.clause-card.severity-medium { border-left-color: #f39c12; }
+.clause-card.severity-high { border-left-color: #c0392b; }
+
+.clause-quote {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.clause-plain {
+  font-size: 12px;
+  color: #1a1a1a;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.clause-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f0f0f0;
+  color: #555;
+  font-weight: 500;
+}
+
+.badge.concept {
+  background: #eef2ff;
+  color: #3730a3;
+}

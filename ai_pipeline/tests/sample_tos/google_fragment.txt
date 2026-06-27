@@ -1,0 +1,2 @@
+Paste a fragment of Google's Terms of Service here for manual prompt testing.
+Source: https://policies.google.com/terms

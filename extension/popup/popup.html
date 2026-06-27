@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToS Reader</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <span class="logo">ToS Reader</span>
+      </header>
+
+      <!-- States -->
+      <div id="state-loading" class="state hidden">
+        <div class="spinner"></div>
+        <p>Analyzing Terms of Service...</p>
+      </div>
+
+      <div id="state-no-tos" class="state hidden">
+        <p class="muted">No Terms of Service detected on this page.</p>
+      </div>
+
+      <div id="state-error" class="state hidden">
+        <p class="error-msg">Something went wrong.</p>
+        <p id="error-detail" class="muted"></p>
+      </div>
+
+      <div id="state-result" class="state hidden">
+        <section id="tldr-section">
+          <h2>Summary</h2>
+          <p id="tldr-text"></p>
+        </section>
+
+        <section id="clauses-section">
+          <h2>Key Clauses</h2>
+          <div id="clauses-list"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
