@@ -31,6 +31,17 @@ function renderResult(data) {
   showState("state-result");
 }
 
+function applyResult(result) {
+  if (result.status === "success") {
+    renderResult(result.data);
+  } else if (result.status === "error") {
+    showState("state-error");
+    document.getElementById("error-detail").textContent = result.data?.message ?? "";
+  } else {
+    showState("state-no-tos");
+  }
+}
+
 async function init() {
   showState("state-loading");
 
@@ -48,19 +59,18 @@ async function init() {
 
   if (result.status === "loading") {
     showState("state-loading");
-    // TODO: poll or use chrome.storage.onChanged to update when ready
+    // Auto-update when the service worker writes the finished result to storage
+    const storageKey = `result_${tab.id}`;
+    const listener = (changes, area) => {
+      if (area !== "session" || !changes[storageKey]) return;
+      chrome.storage.onChanged.removeListener(listener);
+      applyResult(changes[storageKey].newValue);
+    };
+    chrome.storage.onChanged.addListener(listener);
     return;
   }
 
-  if (result.status === "error") {
-    showState("state-error");
-    document.getElementById("error-detail").textContent = result.data?.message ?? "";
-    return;
-  }
-
-  if (result.status === "success") {
-    renderResult(result.data);
-  }
+  applyResult(result);
 }
 
 document.addEventListener("DOMContentLoaded", init);
