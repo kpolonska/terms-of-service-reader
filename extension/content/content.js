@@ -56,9 +56,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function run() {
   if (!isTosPage()) return;
   const text = extractText();
-  if (!text || text.length < 100) return;
+  if (!text || text.length < 100) {
+    console.log("[ToS Reader] Text too short or missing, retrying...");
+    return false;
+  }
   console.log("[ToS Reader] Auto-detected and extracted ToS text");
   chrome.runtime.sendMessage({ type: "TOS_TEXT", text, domain: window.location.hostname });
+  return true;
 }
 
-setTimeout(run, 6000);
+let attempts = 0;
+const maxAttempts = 5;
+const interval = setInterval(() => {
+  if (run() || attempts >= maxAttempts) {
+    clearInterval(interval);
+  }
+  attempts++;
+}, 2000);
+
+const observer = new MutationObserver(() => {
+  if (run()) {
+    observer.disconnect();
+    clearInterval(interval);
+  }
+});
+
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  characterData: false,
+});

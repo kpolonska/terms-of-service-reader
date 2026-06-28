@@ -25,20 +25,6 @@ def analyze_tos(text: str, domain: str | None = None, profile: str = "general") 
     return {**result, "cached": False}
 
 
-<<<<<<< HEAD
-def _call_claude(system_prompt: str, user_message: str) -> str:
-    client = anthropic.Anthropic(
-        api_key=os.environ["ANTHROPIC_API_KEY"],
-        max_retries=3,
-        timeout=60.0,
-    )
-
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
-=======
 def generate_alternatives(domain: str, tldr: str, categories: list[str]) -> list[dict]:
     cached = get_cached_alternatives(domain)
     if cached is not None:

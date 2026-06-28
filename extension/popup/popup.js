@@ -202,6 +202,7 @@ function showState(id) {
 }
 
 function renderResult(data, domain) {
+  showState("state-result");
   initSubscribeButton(domain);
 
   if (data.risk) {
