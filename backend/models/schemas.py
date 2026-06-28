@@ -46,6 +46,25 @@ class Clause(BaseModel):
     concept: str
 
 
+class ExplainRequest(BaseModel):
+    quote: str
+    category: str
+    profile: str = "general"
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, v: str) -> str:
+        if v not in {"general", "journalist", "activist", "business"}:
+            raise ValueError("Invalid profile.")
+        return v
+
+
+class ExplainResponse(BaseModel):
+    detailed_explanation: str
+    real_world_example: str
+    what_you_can_do: str
+
+
 class RiskScore(BaseModel):
     score: int   # 1–10, higher = more dangerous
     label: str   # "SAFE" | "CAUTION" | "RISKY" | "DANGEROUS"
