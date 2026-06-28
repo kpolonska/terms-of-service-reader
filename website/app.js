@@ -1,5 +1,10 @@
 const API = "http://localhost:8000";
 
+if (typeof pdfjsLib !== "undefined") {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
 const $ = (id) => document.getElementById(id);
 
 const analyzeBtn   = $("analyze-btn");
@@ -8,9 +13,21 @@ const btnLoading   = $("btn-loading");
 const tosInput     = $("tos-input");
 const domainInput  = $("domain-input");
 const profileInput = $("profile-input");
-const fileInput    = $("file-input");
-const fileUploadBtn = $("file-upload-btn");
+const fileInput       = $("file-input");
+const fileUploadBtn   = $("file-upload-btn");
 const fileUploadLabel = $("file-upload-label");
+const fileClearBtn    = $("file-clear-btn");
+const fileTypeHint    = $("file-type-hint");
+
+function resetFileUpload() {
+  tosInput.value = "";
+  fileUploadLabel.textContent = "Upload file (.txt, .pdf, .docx, .html)";
+  fileClearBtn.classList.add("hidden");
+  fileTypeHint.classList.remove("hidden");
+  fileInput.value = "";
+}
+
+fileClearBtn.addEventListener("click", resetFileUpload);
 
 async function extractText(file) {
   const ext = file.name.split(".").pop().toLowerCase();
@@ -96,8 +113,12 @@ fileInput.addEventListener("change", async () => {
     const text = await extractText(file);
     tosInput.value = text;
     fileUploadLabel.textContent = `✓ ${file.name}`;
+    fileClearBtn.classList.remove("hidden");
+    fileTypeHint.classList.add("hidden");
   } catch (err) {
     fileUploadLabel.textContent = "Upload file (.txt, .pdf, .docx, .html)";
+    fileClearBtn.classList.add("hidden");
+    fileTypeHint.classList.remove("hidden");
     errorText.textContent = err.message;
     showResult(resultError);
   } finally {
