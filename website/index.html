@@ -16,9 +16,9 @@
       ToS Reader
     </a>
     <div class="nav-links">
+      <a href="#try">Try online</a>
       <a href="#features">Features</a>
       <a href="#install">Install</a>
-      <a href="#try">Try online</a>
     </div>
     <a href="#install" class="btn btn-primary btn-sm">Get extension</a>
   </nav>
@@ -43,8 +43,8 @@
         when the terms change.
       </p>
       <div class="hero-cta">
-        <a href="#install" class="btn btn-primary">Get extension →</a>
-        <a href="#try" class="btn btn-ghost">Try online</a>
+        <a href="#try" class="btn btn-primary">Try it free →</a>
+        <a href="#install" class="btn btn-ghost">Get extension</a>
       </div>
 
       <!-- Mock risk card -->
@@ -90,6 +90,101 @@
       <div class="stat">
         <span class="stat-num">4</span>
         <span class="stat-label">User profiles</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRY ONLINE -->
+  <section class="section section-dark" id="try">
+    <div class="container">
+      <div class="section-label">No extension needed</div>
+      <h2 class="section-title">Try it <span class="gradient-text">right here.</span></h2>
+      <p class="section-sub">Paste any Terms of Service text and get an instant AI analysis. Same engine as the extension.</p>
+
+      <div class="app-panel">
+        <div class="app-input-side">
+          <div class="app-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Domain (optional)</label>
+                <input type="text" id="domain-input" placeholder="e.g. twitter.com" />
+              </div>
+              <div class="form-group">
+                <label>Profile</label>
+                <select id="profile-input">
+                  <option value="general">General</option>
+                  <option value="journalist">Journalist</option>
+                  <option value="activist">Activist</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Terms of Service text</label>
+              <div class="file-upload-area" id="file-upload-area">
+                <input type="file" id="file-input" accept=".txt,.pdf,.docx,.html,.htm" hidden />
+                <button type="button" class="file-upload-btn" id="file-upload-btn">
+                  <span class="file-upload-icon">↑</span>
+                  <span id="file-upload-label">Upload file (.txt, .pdf, .docx, .html)</span>
+                </button>
+                <button type="button" class="file-clear-btn hidden" id="file-clear-btn" title="Clear file">✕</button>
+                <span class="file-type-hint" id="file-type-hint">or paste text below</span>
+              </div>
+              <textarea id="tos-input" placeholder="Paste the Terms of Service or Privacy Policy text here...&#10;&#10;Minimum 100 characters. You can copy the text from any legal page."></textarea>
+            </div>
+            <button id="analyze-btn" class="btn btn-primary btn-full">
+              <span id="btn-text">Analyze →</span>
+              <span id="btn-loading" class="hidden">Analyzing…</span>
+            </button>
+            <p class="form-note">Connects to local backend (localhost:8000). <a href="#install" style="color:inherit;opacity:0.75">One-click launcher →</a></p>
+          </div>
+        </div>
+
+        <div class="app-result-side">
+          <div id="result-empty" class="result-empty">
+            <div class="result-empty-icon">◈</div>
+            <p>Your analysis will appear here</p>
+            <p class="muted">Risk score, flagged clauses, plain-English summaries</p>
+          </div>
+
+          <div id="result-error" class="result-panel hidden">
+            <div class="result-error-msg">
+              <span class="error-icon">⚠</span>
+              <span id="error-text"></span>
+            </div>
+          </div>
+
+          <div id="result-data" class="result-panel hidden">
+            <div class="web-risk-badge" id="web-risk-badge">
+              <div class="web-risk-score" id="web-risk-score"></div>
+              <div class="web-risk-info">
+                <div class="web-risk-label" id="web-risk-label"></div>
+                <div class="web-risk-sub">Risk Score</div>
+              </div>
+              <div class="web-cached-tag hidden" id="web-cached">Cached</div>
+            </div>
+
+            <div class="web-tldr">
+              <div class="web-section-label">Summary</div>
+              <p id="web-tldr-text"></p>
+            </div>
+
+            <div class="web-alternatives hidden" id="web-alts">
+              <div class="web-section-label">Consider instead</div>
+              <div id="web-alts-list"></div>
+            </div>
+
+            <div class="web-clauses">
+              <div class="web-section-label">Key Clauses</div>
+              <div id="web-clauses-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="try-next">
+        <p class="try-next-label">Like what you see? Bring this analysis to every website you visit.</p>
+        <a href="#install" class="btn btn-primary">Get the Chrome extension →</a>
       </div>
     </div>
   </section>
@@ -240,8 +335,23 @@
       </div>
 
       <div class="install-note">
-        <strong>Requires local backend.</strong> The extension calls <code>localhost:8000</code>. Start it with:
-        <code class="install-cmd">cd backend &amp;&amp; source venv/bin/activate &amp;&amp; uvicorn main:app --reload</code>
+        <strong>Requires local backend.</strong> The extension calls <code>localhost:8000</code>.
+        Download the project and double-click a launcher — no terminal needed:
+        <div class="launcher-row">
+          <a href="https://github.com/kpolonska/terms-of-service-reader/archive/refs/heads/main.zip" class="launcher-btn" id="launcher-mac">
+            <span class="launcher-os">🍎 Mac</span>
+            <span class="launcher-file">double-click start.command</span>
+          </a>
+          <a href="https://github.com/kpolonska/terms-of-service-reader/archive/refs/heads/main.zip" class="launcher-btn" id="launcher-win">
+            <span class="launcher-os">🪟 Windows</span>
+            <span class="launcher-file">double-click start.bat</span>
+          </a>
+          <a href="https://github.com/kpolonska/terms-of-service-reader/archive/refs/heads/main.zip" download class="launcher-btn launcher-btn--dl">
+            <span class="launcher-os">⬇ Download project ZIP</span>
+            <span class="launcher-file">includes both launchers</span>
+          </a>
+        </div>
+        <div class="launcher-prereq">Requires: <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a> (free) · <a href="https://llmapi.ai" target="_blank" rel="noopener">LLMAPI key</a> (free tier available)</div>
       </div>
     </div>
   </section>
@@ -275,96 +385,6 @@
     </div>
   </section>
 
-  <!-- TRY ONLINE -->
-  <section class="section section-dark" id="try">
-    <div class="container">
-      <div class="section-label">No extension needed</div>
-      <h2 class="section-title">Try it <span class="gradient-text">right here.</span></h2>
-      <p class="section-sub">Paste any Terms of Service text and get an instant AI analysis. Same engine as the extension.</p>
-
-      <div class="app-panel">
-        <div class="app-input-side">
-          <div class="app-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Domain (optional)</label>
-                <input type="text" id="domain-input" placeholder="e.g. twitter.com" />
-              </div>
-              <div class="form-group">
-                <label>Profile</label>
-                <select id="profile-input">
-                  <option value="general">General</option>
-                  <option value="journalist">Journalist</option>
-                  <option value="activist">Activist</option>
-                  <option value="business">Business</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Terms of Service text</label>
-              <div class="file-upload-area" id="file-upload-area">
-                <input type="file" id="file-input" accept=".txt,.pdf,.docx,.html,.htm" hidden />
-                <button type="button" class="file-upload-btn" id="file-upload-btn">
-                  <span class="file-upload-icon">↑</span>
-                  <span id="file-upload-label">Upload file (.txt, .pdf, .docx, .html)</span>
-                </button>
-                <button type="button" class="file-clear-btn hidden" id="file-clear-btn" title="Clear file">✕</button>
-                <span class="file-type-hint" id="file-type-hint">or paste text below</span>
-              </div>
-              <textarea id="tos-input" placeholder="Paste the Terms of Service or Privacy Policy text here...&#10;&#10;Minimum 100 characters. You can copy the text from any legal page."></textarea>
-            </div>
-            <button id="analyze-btn" class="btn btn-primary btn-full">
-              <span id="btn-text">Analyze →</span>
-              <span id="btn-loading" class="hidden">Analyzing…</span>
-            </button>
-            <p class="form-note">Connects to local backend (localhost:8000). Start with: <code>uvicorn main:app</code></p>
-          </div>
-        </div>
-
-        <div class="app-result-side">
-          <div id="result-empty" class="result-empty">
-            <div class="result-empty-icon">◈</div>
-            <p>Your analysis will appear here</p>
-            <p class="muted">Risk score, flagged clauses, plain-English summaries</p>
-          </div>
-
-          <div id="result-error" class="result-panel hidden">
-            <div class="result-error-msg">
-              <span class="error-icon">⚠</span>
-              <span id="error-text"></span>
-            </div>
-          </div>
-
-          <div id="result-data" class="result-panel hidden">
-            <div class="web-risk-badge" id="web-risk-badge">
-              <div class="web-risk-score" id="web-risk-score"></div>
-              <div class="web-risk-info">
-                <div class="web-risk-label" id="web-risk-label"></div>
-                <div class="web-risk-sub">Risk Score</div>
-              </div>
-              <div class="web-cached-tag hidden" id="web-cached">Cached</div>
-            </div>
-
-            <div class="web-tldr">
-              <div class="web-section-label">Summary</div>
-              <p id="web-tldr-text"></p>
-            </div>
-
-            <div class="web-alternatives hidden" id="web-alts">
-              <div class="web-section-label">Consider instead</div>
-              <div id="web-alts-list"></div>
-            </div>
-
-            <div class="web-clauses">
-              <div class="web-section-label">Key Clauses</div>
-              <div id="web-clauses-list"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-inner">
@@ -374,9 +394,9 @@
         <span class="footer-kse">· KSE AI390 Project</span>
       </div>
       <div class="footer-links">
-        <a href="#features">Features</a>
-        <a href="#how">How it works</a>
         <a href="#try">Try online</a>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
         <a href="https://github.com/kpolonska/terms-of-service-reader" target="_blank">GitHub</a>
       </div>
       <div class="footer-copy">

@@ -2,6 +2,52 @@
 
 A Chrome extension that analyzes Terms of Service documents and explains what you're agreeing to in plain English. Built as a research project exploring surveillance capitalism, datafication, and platformization through the lens of real corporate legal documents.
 
+**Website:** [kpolonska.github.io/terms-of-service-reader](https://kpolonska.github.io/terms-of-service-reader) · **Repo:** [github.com/kpolonska/terms-of-service-reader](https://github.com/kpolonska/terms-of-service-reader)
+
+---
+
+## User journey
+
+The intended flow for a new user:
+
+```
+1. Open the website
+      ↓
+2. Try the live demo — paste any ToS text, get instant analysis
+   (no install needed, runs in the browser against localhost:8000)
+      ↓
+3. Want this on every website you visit?
+   → Download the extension ZIP → load in Chrome (3 steps, ~60 seconds)
+   → Start the local backend (double-click start.command / start.bat)
+      ↓
+4. Use the extension everywhere
+   → Visit any /terms, /privacy, /legal page
+   → Extension auto-detects and analyzes
+   → Click the toolbar icon to see risk score, flagged clauses, TLDR
+   → Pick a profile (General / Journalist / Activist / Business)
+     before clicking Analyze for profile-tailored results
+   → Subscribe to get notified when a site changes its ToS
+```
+
+### Starting the backend (no terminal needed)
+
+The backend runs locally via Docker. Download the project ZIP and use the included launchers:
+
+| OS | Launcher | What it does |
+|----|----------|--------------|
+| Mac | `start.command` (double-click) | Checks `.env`, checks Docker, runs `docker compose up --build -d`, opens website |
+| Windows | `start.bat` (double-click) | Same flow with PowerShell dialogs |
+
+Prerequisites: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (free) + an [LLMAPI key](https://llmapi.ai) (free tier).
+
+Setup once:
+```bash
+cp .env.example .env
+# open .env, replace your_llmapi_key_here with your real key
+```
+
+Then double-click the launcher — it handles everything else.
+
 ---
 
 ## How it works
@@ -52,23 +98,16 @@ terms-of-service-reader/
 
 ## Quick start
 
-### Open the website (no backend needed)
+### Option A — one-click (recommended for end users)
 
-```bash
-open website/index.html
-```
+1. Download the project ZIP from [github.com/kpolonska/terms-of-service-reader](https://github.com/kpolonska/terms-of-service-reader/archive/refs/heads/main.zip) and unzip it
+2. Copy `.env.example` → `.env` and add your `LLMAPI_KEY`
+3. **Mac:** double-click `start.command` · **Windows:** double-click `start.bat`
+4. The launcher checks Docker, starts the backend, and opens the website automatically
 
-Or serve locally (better for testing):
+Prerequisites: [Docker Desktop](https://www.docker.com/products/docker-desktop/) + [LLMAPI key](https://llmapi.ai).
 
-```bash
-cd website
-python3 -m http.server 3000
-# → http://localhost:3000
-```
-
-The landing page, features, and how-it-works sections are fully static. The "Try online" analysis panel requires the backend to be running.
-
-### Run the full stack
+### Option B — manual (for developers)
 
 **Step 1 — create `.env`:**
 
@@ -81,9 +120,7 @@ cp .env.example .env
 
 ```bash
 cd backend
-python3 -m venv venv
 source venv/bin/activate      # Windows: venv\Scripts\activate
-pip install -r requirements.txt
 uvicorn main:app --reload
 # → http://localhost:8000
 ```
@@ -93,21 +130,18 @@ Verify it works:
 curl http://localhost:8000/health
 ```
 
-**Step 3 — load the extension in Chrome:**
+**Step 3 — open the website:**
+
+```bash
+open website/index.html
+# or: cd website && python3 -m http.server 3000
+```
+
+**Step 4 — load the extension in Chrome:**
 
 1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked**
-4. Select the `extension/` folder
-
-**Step 4 — open the website:**
-
-```bash
-cd website
-python3 -m http.server 3000
-```
-
-Navigate to `http://localhost:3000`. The "Try online" panel now connects to `http://localhost:8000`.
+3. Click **Load unpacked** → select the `extension/` folder
 
 ### API endpoints
 
