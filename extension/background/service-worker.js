@@ -47,7 +47,7 @@ async function analyzeText(text, domain, tabId) {
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
-    setResult(tabId, { status: "success", data });
+    setResult(tabId, { status: "success", data, domain });
 
     if (data.risk) {
       chrome.action.setBadgeText({ text: String(data.risk.score), tabId });

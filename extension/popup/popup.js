@@ -57,7 +57,7 @@ function showState(id) {
   document.getElementById(id).classList.remove("hidden");
 }
 
-function renderResult(data) {
+function renderResult(data, domain) {
   if (data.risk) {
     const badge = document.getElementById("risk-badge");
     const label = data.risk.label.toLowerCase();
@@ -109,12 +109,22 @@ function renderResult(data) {
     list.appendChild(card);
   });
 
+  if (domain) {
+    const downloadBtn = document.createElement("button");
+    downloadBtn.className = "download-btn";
+    downloadBtn.textContent = "Download PDF Report";
+    downloadBtn.addEventListener("click", () => {
+      chrome.tabs.create({ url: `http://localhost:8000/report/${domain}` });
+    });
+    document.getElementById("clauses-section").appendChild(downloadBtn);
+  }
+
   showState("state-result");
 }
 
 function applyResult(result) {
   if (result.status === "success") {
-    renderResult(result.data);
+    renderResult(result.data, result.domain);
   } else if (result.status === "error") {
     showState("state-error");
     document.getElementById("error-detail").textContent = result.data?.message ?? "";
