@@ -17,10 +17,10 @@
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>
-      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
       <a href="#try">Try online</a>
     </div>
-    <a href="#try" class="btn btn-primary btn-sm">Try it free</a>
+    <a href="#install" class="btn btn-primary btn-sm">Get extension</a>
   </nav>
 
   <!-- HERO -->
@@ -43,8 +43,8 @@
         when the terms change.
       </p>
       <div class="hero-cta">
-        <a href="#try" class="btn btn-primary">Try online →</a>
-        <a href="#features" class="btn btn-ghost">See features</a>
+        <a href="#install" class="btn btn-primary">Get extension →</a>
+        <a href="#try" class="btn btn-ghost">Try online</a>
       </div>
 
       <!-- Mock risk card -->
@@ -167,30 +167,81 @@
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="section section-dark" id="how">
+  <!-- INSTALL -->
+  <section class="section section-dark" id="install">
     <div class="container">
-      <div class="section-label">Simple process</div>
-      <h2 class="section-title">Three steps to<br /><span class="gradient-text">know what you're signing.</span></h2>
+      <div class="section-label">Chrome extension</div>
+      <h2 class="section-title">Install in <span class="gradient-text">60 seconds.</span></h2>
+      <p class="section-sub">No Chrome Web Store needed. Load directly from the ZIP file — takes 3 steps.</p>
 
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <h3>Install the extension</h3>
-          <p>Add ToS Reader to Chrome in one click. No account required. Works on any site with Terms of Service or Privacy Policy.</p>
+      <div class="install-download">
+        <a href="tos-reader-extension.zip" download class="btn btn-primary btn-lg" id="download-btn">
+          ↓ Download extension ZIP
+        </a>
+        <span class="install-version">Chrome · Manifest V3 · Free</span>
+      </div>
+
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="install-step-num">1</div>
+          <div class="install-step-body">
+            <h3>Download &amp; unzip</h3>
+            <p>Click the button above to download <code>tos-reader-extension.zip</code>. Unzip it anywhere on your computer — you'll get a folder called <code>extension/</code>.</p>
+          </div>
         </div>
-        <div class="step-arrow">→</div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <h3>Visit any ToS page</h3>
-          <p>Navigate to a Terms of Service, Privacy Policy, or legal document page. The extension detects and extracts the text automatically.</p>
+
+        <div class="install-connector"></div>
+
+        <div class="install-step">
+          <div class="install-step-num">2</div>
+          <div class="install-step-body">
+            <h3>Open Chrome extensions</h3>
+            <p>In Chrome, go to <code>chrome://extensions</code> (paste into address bar). Enable <strong>Developer mode</strong> using the toggle in the top-right corner.</p>
+            <div class="install-tip">💡 Developer mode lets you load extensions from your computer instead of the Chrome Web Store.</div>
+          </div>
         </div>
-        <div class="step-arrow">→</div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <h3>Get your analysis</h3>
-          <p>Click the ToS Reader badge in your toolbar to see the risk score, flagged clauses, plain-English summaries, and alternatives.</p>
+
+        <div class="install-connector"></div>
+
+        <div class="install-step">
+          <div class="install-step-num">3</div>
+          <div class="install-step-body">
+            <h3>Load the extension</h3>
+            <p>Click <strong>Load unpacked</strong> → select the <code>extension/</code> folder you unzipped. ToS Reader will appear in your extensions list.</p>
+            <p class="install-done">That's it. Pin it to your toolbar and visit any Terms of Service page.</p>
+          </div>
         </div>
+      </div>
+
+      <div class="install-usage">
+        <div class="section-label" style="margin-bottom:20px">How to use it</div>
+        <div class="usage-grid">
+          <div class="usage-card">
+            <div class="usage-icon">🌐</div>
+            <h4>Auto-detect</h4>
+            <p>Go to any page with "terms", "privacy", or "legal" in the URL. The extension reads it automatically.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">🔍</div>
+            <h4>Click the badge</h4>
+            <p>Click the ToS Reader icon in your toolbar to open the popup with risk score, clauses, and summary.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">👤</div>
+            <h4>Pick your profile</h4>
+            <p>Switch between General, Journalist, Activist, or Business — the AI flags different risks for each.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">🔔</div>
+            <h4>Subscribe to changes</h4>
+            <p>Click Subscribe in the popup to get notified when the site updates its Terms of Service.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-note">
+        <strong>Requires local backend.</strong> The extension calls <code>localhost:8000</code>. Start it with:
+        <code class="install-cmd">cd backend &amp;&amp; source venv/bin/activate &amp;&amp; uvicorn main:app --reload</code>
       </div>
     </div>
   </section>
