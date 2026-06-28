@@ -123,28 +123,28 @@ PROFILE_INSTRUCTIONS = {
 
 ## Feature 3 — Alternatives recommendation
 
-**Goal:** When a ToS is high-risk, suggest privacy-respecting alternative services.
+**Goal:** When a ToS risk score is ≥ 7 (RISKY or DANGEROUS), suggest privacy-respecting alternatives.
+
+**Approach: AI-generated + cached.** Claude receives the domain, TLDR, and clause categories, then dynamically suggests 2–4 alternatives with specific privacy reasons. Results are stored in the `alternatives_cache` SQLite table — each domain is queried only once; subsequent requests return the cached result instantly. No static lookup file — alternatives adapt to what the service actually does as revealed by the ToS.
+
+### AI Pipeline — `ai_pipeline/`
+
+**Create** `ai_pipeline/alternatives_prompt.py`:
+- `build_alternatives_prompt(domain, tldr, categories)` — builds prompt for Claude to generate alternatives
+
+**Modify** `ai_pipeline/pipeline.py`:
+- `generate_alternatives(domain, tldr, categories)` — checks cache, calls Claude, stores result
+
+**Modify** `ai_pipeline/cache.py`:
+- Add `alternatives_cache` table to `init_db()`
+- Add `get_cached_alternatives(domain)` and `store_alternatives(domain, alternatives)`
 
 ### Backend — `backend/`
 
-**Create** `backend/data/alternatives.json`:
-```json
-{
-  "google.com": [
-    {"name": "Proton", "url": "proton.me", "reason": "End-to-end encryption, no ad targeting"},
-    {"name": "Tutanota", "url": "tuta.com", "reason": "Zero-knowledge encryption"}
-  ],
-  "docs.google.com": [
-    {"name": "Cryptpad", "url": "cryptpad.fr", "reason": "Zero-knowledge collaborative editing"},
-    {"name": "Notion", "url": "notion.so", "reason": "Less aggressive data collection"}
-  ]
-}
-```
-
-**Create** `backend/services/alternatives_service.py`:
+**Modify** `backend/services/alternatives_service.py`:
 ```python
-def get_alternatives(domain: str, score: str) -> list[dict]:
-    """Return alternatives if score is D or F, else empty list."""
+def get_alternatives(domain, risk_score, tldr, categories) -> list[dict]:
+    """Return AI-generated alternatives if risk_score >= 7, else []."""
 ```
 
 **Modify** `models/schemas.py`:

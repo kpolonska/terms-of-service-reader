@@ -46,6 +46,12 @@ class Clause(BaseModel):
     concept: str
 
 
+class Alternative(BaseModel):
+    name: str
+    url: str
+    reason: str
+
+
 class ExplainRequest(BaseModel):
     quote: str
     category: str
@@ -76,3 +82,4 @@ class AnalyzeResponse(BaseModel):
     cached: bool
     analyzed_at: str
     risk: RiskScore
+    alternatives: list[Alternative] = []

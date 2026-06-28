@@ -138,6 +138,18 @@ Content-Type: application/json
 **concept** — one of:
 `Surveillance Capitalism (Zuboff)`, `Datafication (Van Dijck)`, `Platformization (Srnicek)`, `Algorithmic Opacity (Pasquale)`, `General Power Asymmetry`
 
+**risk** — object:
+```json
+{"score": 8, "label": "DANGEROUS"}
+```
+`score` is 1–10 (higher = more dangerous). `label` is one of `SAFE`, `CAUTION`, `RISKY`, `DANGEROUS`.
+
+**alternatives** — array of privacy-respecting alternatives, returned only when `risk.score >= 7`:
+```json
+[{"name": "Signal", "url": "signal.org", "reason": "End-to-end encrypted, no metadata collection."}]
+```
+Alternatives are **AI-generated dynamically** by Claude based on the domain and the specific privacy risks found in the ToS analysis. Results are cached in SQLite so each domain is only analyzed once — subsequent requests return the cached alternatives instantly at no extra cost.
+
 ---
 
 ---
