@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime, timezone
 
 from models.schemas import AnalyzeRequest, AnalyzeResponse
-from services.ai_service import analyze
+from services.ai_service import analyze, RateLimitError
 
 router = APIRouter()
 
@@ -13,6 +13,8 @@ async def analyze_tos(request: AnalyzeRequest):
         result = analyze(request.text, request.domain)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except RateLimitError as e:
+        raise HTTPException(status_code=429, detail=str(e))
     except TimeoutError:
         raise HTTPException(status_code=503, detail="AI service timed out. Please try again.")
     except Exception as e:
@@ -21,6 +23,6 @@ async def analyze_tos(request: AnalyzeRequest):
     return AnalyzeResponse(
         tldr=result["tldr"],
         clauses=result["clauses"],
-        cached=result["cached"],
+        cached=result.get("cached", False),
         analyzed_at=datetime.now(timezone.utc).isoformat(),
     )

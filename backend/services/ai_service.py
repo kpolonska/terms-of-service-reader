@@ -1,43 +1,30 @@
 import sys
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "ai_pipeline"))
+_project_root = Path(__file__).resolve().parent.parent.parent
+load_dotenv(_project_root / ".env")
 
-from prompt import build_prompt
-from parser import parse_response
-from cache import get_cached, store_result, compute_hash
+if not os.environ.get("DATABASE_PATH") or os.environ["DATABASE_PATH"] == "analyses.db":
+    os.environ["DATABASE_PATH"] = str(_project_root / "ai_pipeline" / "analyses.db")
+
+sys.path.insert(0, str(_project_root / "ai_pipeline"))
+
+from pipeline import analyze_tos
+import openai
+
+
+class RateLimitError(Exception):
+    pass
 
 
 def analyze(text: str, domain: str | None = None) -> dict:
-    text_hash = compute_hash(text)
-
-    cached = get_cached(text_hash)
-    if cached:
-        return {**cached, "cached": True}
-
-    # TODO: replace with actual Claude/OpenAI API call
-    # raw_response = call_claude(build_prompt(text))
-    raw_response = _mock_api_call(text)
-
-    result = parse_response(raw_response)
-    store_result(text_hash, domain, result)
-
-    return {**result, "cached": False}
-
-
-def _mock_api_call(text: str) -> str:
-    # Placeholder — remove once ai_pipeline prompt.py + Claude integration is wired up
-    return """
-    {
-      "tldr": "This is a placeholder analysis. Wire up the Claude API to get real results.",
-      "clauses": [
-        {
-          "quote": "We may share your data with third parties.",
-          "plain_english": "The company can give your personal data to other companies.",
-          "category": "data_sharing_third_parties",
-          "severity": "high",
-          "concept": "Surveillance Capitalism (Zuboff)"
-        }
-      ]
-    }
-    """
+    try:
+        return analyze_tos(text, domain)
+    except openai.RateLimitError as e:
+        raise RateLimitError("Too many requests. Please wait and try again.") from e
+    except (openai.APIConnectionError, openai.APITimeoutError) as e:
+        raise TimeoutError("AI service is unreachable. Please try again.") from e
+    except openai.APIStatusError as e:
+        raise TimeoutError(f"AI service returned error {e.status_code}.") from e
