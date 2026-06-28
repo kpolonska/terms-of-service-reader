@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToS Reader — Stats</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="stats.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <a href="popup.html" class="header-link">← Back</a>
+        <span class="logo">Statistics</span>
+      </header>
+
+      <div id="state-loading" class="state">
+        <div class="spinner"></div>
+        <p>Loading stats...</p>
+      </div>
+
+      <div id="state-empty" class="state hidden">
+        <p class="muted">No sites analyzed yet. Visit a Terms of Service page to get started.</p>
+      </div>
+
+      <div id="state-stats" class="state hidden">
+        <div class="summary-row">
+          <div class="summary-card">
+            <span id="total-count" class="summary-value"></span>
+            <span class="summary-label">Sites analyzed</span>
+          </div>
+          <div class="summary-card">
+            <span id="avg-score" class="summary-value"></span>
+            <span class="summary-label">Avg risk score</span>
+          </div>
+        </div>
+
+        <section class="chart-section">
+          <h2>Most dangerous sites</h2>
+          <div id="domains-list" class="domains-list"></div>
+        </section>
+
+        <section class="chart-section">
+          <h2>Clause categories</h2>
+          <canvas id="chart-categories"></canvas>
+        </section>
+
+        <section class="chart-section">
+          <h2>Academic concepts</h2>
+          <canvas id="chart-concepts"></canvas>
+        </section>
+
+        <section class="chart-section">
+          <h2>Severity breakdown</h2>
+          <canvas id="chart-severity"></canvas>
+        </section>
+      </div>
+    </div>
+    <script src="stats.js"></script>
+  </body>
+</html>
