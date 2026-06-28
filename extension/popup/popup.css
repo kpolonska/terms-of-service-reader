@@ -341,6 +341,42 @@ header {
   line-height: 1.55;
 }
 
+/* Subscribe */
+#subscribe-row {
+  margin-bottom: 12px;
+}
+
+.subscribe-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.subscribe-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.subscribe-btn.subscribed {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.subscribe-btn.subscribed:hover {
+  background: #dbeafe;
+}
+
 /* Version diff */
 #diff-section {
   margin-bottom: 14px;

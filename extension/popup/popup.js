@@ -50,6 +50,101 @@ function renderExplanation(card, data) {
   card.appendChild(section);
 }
 
+const SUBSCRIBE_URL = "http://localhost:8000/subscribe";
+
+async function initSubscribeButton(domain) {
+  const row = document.getElementById("subscribe-row");
+  const btn = document.getElementById("subscribe-btn");
+
+  if (!domain) {
+    row.classList.add("hidden");
+    return;
+  }
+
+  row.classList.remove("hidden");
+
+  const { subscriptions = [] } = await chrome.storage.local.get("subscriptions");
+  let subscribed = subscriptions.includes(domain);
+
+  const update = () => {
+    btn.textContent = subscribed ? "Unsubscribe from changes" : "Subscribe to changes";
+    btn.classList.toggle("subscribed", subscribed);
+  };
+  update();
+
+  btn.addEventListener("click", async () => {
+    const stored = await chrome.storage.local.get("subscriptions");
+    const list = stored.subscriptions ?? [];
+
+    if (subscribed) {
+      const next = list.filter((d) => d !== domain);
+      await chrome.storage.local.set({ subscriptions: next });
+      fetch(`${SUBSCRIBE_URL}/${encodeURIComponent(domain)}`, { method: "DELETE" }).catch(() => {});
+      subscribed = false;
+    } else {
+      list.push(domain);
+      await chrome.storage.local.set({ subscriptions: list });
+      fetch(SUBSCRIBE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
+      }).catch(() => {});
+      subscribed = true;
+    }
+    update();
+  });
+}
+
+function renderDiff(diff) {
+  const section = document.getElementById("diff-section");
+  const list = document.getElementById("diff-list");
+  list.replaceChildren();
+
+  if (!diff || !diff.has_changes) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  section.classList.remove("hidden");
+
+  const DIRECTION_ICON = { worse: "↑", better: "↓", new: "+", removed: "−" };
+  const DIRECTION_CLASS = { worse: "diff-worse", better: "diff-better", new: "diff-new", removed: "diff-removed" };
+
+  diff.changed_clauses.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = `diff-row ${DIRECTION_CLASS[item.direction] ?? ""}`;
+
+    const icon = document.createElement("span");
+    icon.className = "diff-icon";
+    icon.textContent = DIRECTION_ICON[item.direction] ?? "?";
+
+    const label = document.createElement("span");
+    label.className = "diff-label";
+    label.textContent = item.category.replaceAll("_", " ");
+
+    const detail = document.createElement("span");
+    detail.className = "diff-detail";
+    if (item.direction === "new") {
+      detail.textContent = `new · ${item.current_severity}`;
+    } else if (item.direction === "removed") {
+      detail.textContent = "removed";
+    } else {
+      detail.textContent = `${item.previous_severity} → ${item.current_severity}`;
+    }
+
+    row.appendChild(icon);
+    row.appendChild(label);
+    row.appendChild(detail);
+    list.appendChild(row);
+  });
+
+  const date = new Date(diff.previous_analyzed_at);
+  const stamp = document.createElement("p");
+  stamp.className = "diff-stamp";
+  stamp.textContent = `vs. analysis from ${date.toLocaleDateString()}`;
+  list.appendChild(stamp);
+}
+
 function renderAlternatives(alternatives) {
   const section = document.getElementById("alternatives-section");
   const list = document.getElementById("alternatives-list");
@@ -107,6 +202,8 @@ function showState(id) {
 }
 
 function renderResult(data, domain) {
+  initSubscribeButton(domain);
+
   if (data.risk) {
     const badge = document.getElementById("risk-badge");
     const label = data.risk.label.toLowerCase();
@@ -115,6 +212,7 @@ function renderResult(data, domain) {
     document.getElementById("risk-label").textContent = data.risk.label;
   }
 
+  renderDiff(data.diff ?? null);
   renderAlternatives(data.alternatives ?? []);
 
   document.getElementById("tldr-text").textContent = data.tldr;

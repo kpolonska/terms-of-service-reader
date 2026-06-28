@@ -6,13 +6,14 @@ from routes.health import router as health_router
 from routes.stats import router as stats_router
 from routes.explain import router as explain_router
 from routes.report import router as report_router
+from routes.subscribe import router as subscribe_router
 
 app = FastAPI(title="ToS Reader API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # TODO: lock down to chrome-extension://* in production
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -21,3 +22,4 @@ app.include_router(health_router)
 app.include_router(stats_router)
 app.include_router(explain_router)
 app.include_router(report_router)
+app.include_router(subscribe_router)

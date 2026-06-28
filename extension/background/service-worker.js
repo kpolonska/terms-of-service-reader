@@ -52,6 +52,20 @@ async function analyzeText(text, domain, tabId) {
     const data = await response.json();
     setResult(tabId, { status: "success", data, domain });
 
+    if (data.diff?.has_changes && domain) {
+      const { subscriptions = [] } = await chrome.storage.local.get("subscriptions");
+      if (subscriptions.includes(domain)) {
+        const count = data.diff.changed_clauses.length;
+        chrome.notifications.create(`tos-change-${domain}`, {
+          type: "basic",
+          iconUrl: "../icons/icon48.png",
+          title: "ToS Changed",
+          message: `${domain} updated their Terms of Service. ${count} clause${count !== 1 ? "s" : ""} changed.`,
+          priority: 1,
+        });
+      }
+    }
+
     if (data.risk) {
       chrome.action.setBadgeText({ text: String(data.risk.score), tabId });
       chrome.action.setBadgeBackgroundColor({
