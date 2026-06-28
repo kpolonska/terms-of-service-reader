@@ -1,4 +1,4 @@
-from models import CATEGORIES, CONCEPTS, SEVERITY_LEVELS
+from constants import CATEGORIES, CONCEPTS, SEVERITY_LEVELS
 
 SYSTEM_PROMPT = f"""You are an expert legal analyst specializing in Terms of Service documents.
 Your job is to help ordinary users understand what they are agreeing to.

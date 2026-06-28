@@ -1,6 +1,6 @@
 import json
 import re
-from models import AnalysisResult
+from constants import AnalysisResult
 
 
 def parse_response(raw: str) -> dict:
