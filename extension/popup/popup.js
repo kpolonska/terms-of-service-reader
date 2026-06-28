@@ -205,11 +205,13 @@ function renderResult(data, domain) {
   initSubscribeButton(domain);
 
   if (data.risk) {
-    const badge = document.getElementById("risk-badge");
+    const card = document.getElementById("risk-badge");
     const label = data.risk.label.toLowerCase();
-    badge.className = `risk-badge risk-${label}`;
+    card.className = `risk-card risk-${label}`;
     document.getElementById("risk-score").textContent = `${data.risk.score}/10`;
     document.getElementById("risk-label").textContent = data.risk.label;
+    const bar = document.getElementById("risk-bar");
+    if (bar) bar.style.width = `${(data.risk.score / 10) * 100}%`;
   }
 
   renderDiff(data.diff ?? null);
@@ -268,7 +270,7 @@ function renderResult(data, domain) {
     document.getElementById("clauses-section").appendChild(downloadBtn);
   }
 
-  showState("state-result");
+  document.getElementById("state-result").classList.remove("hidden");
 }
 
 function applyResult(result) {

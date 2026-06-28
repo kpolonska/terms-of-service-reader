@@ -1,0 +1,24 @@
+{
+  "name": "terms-of-service-reader",
+  "version": "1.0.0",
+  "description": "A Chrome extension that analyzes Terms of Service documents and explains what you're agreeing to in plain English. Built as a research project exploring surveillance capitalism, datafication, and platformization through the lens of real corporate legal documents.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kpolonska/terms-of-service-reader.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kpolonska/terms-of-service-reader/issues"
+  },
+  "homepage": "https://github.com/kpolonska/terms-of-service-reader#readme",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
