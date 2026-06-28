@@ -13,7 +13,7 @@ def analyze_tos(text: str, domain: str | None = None) -> dict:
     if cached:
         return {**cached, "cached": True}
 
-    system_prompt, user_message = build_prompt(text)
+    system_prompt, user_message = build_prompt(text, domain)
     raw_response = _call_claude(system_prompt, user_message)
     result = parse_response(raw_response)
 
@@ -22,11 +22,15 @@ def analyze_tos(text: str, domain: str | None = None) -> dict:
 
 
 def _call_claude(system_prompt: str, user_message: str) -> str:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    client = anthropic.Anthropic(
+        api_key=os.environ["ANTHROPIC_API_KEY"],
+        max_retries=3,
+        timeout=60.0,
+    )
 
     message = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=2048,
+        max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )

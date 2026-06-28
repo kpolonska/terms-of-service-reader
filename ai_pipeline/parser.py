@@ -1,11 +1,15 @@
 import json
 import re
+from pydantic import ValidationError
 from models import AnalysisResult
 
 
 def parse_response(raw: str) -> dict:
     parsed = _extract_json(raw)
-    result = AnalysisResult(**parsed)
+    try:
+        result = AnalysisResult(**parsed)
+    except ValidationError as e:
+        raise ValueError(f"AI response failed schema validation: {e}") from e
     return result.model_dump()
 
 

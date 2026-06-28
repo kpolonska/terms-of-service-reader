@@ -1,17 +1,20 @@
 import sys
 import os
-
-# Use an isolated test DB
-os.environ["DATABASE_PATH"] = ":memory:"
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import cache
 
 
+@pytest.fixture(autouse=True)
+def isolated_db(tmp_path, monkeypatch):
+    """Each test gets its own SQLite file in a temp dir."""
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "test_analyses.db"))
+
+
 def test_miss_returns_none():
-    result = cache.get_cached("nonexistent_hash")
-    assert result is None
+    assert cache.get_cached("nonexistent_hash") is None
 
 
 def test_store_and_retrieve():
