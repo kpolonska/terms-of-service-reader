@@ -5,6 +5,7 @@ from models.schemas import AnalyzeRequest, AnalyzeResponse
 from services.ai_service import analyze, RateLimitError
 from services.scoring_service import compute_score
 from services.alternatives_service import get_alternatives
+from services.diff_service import compute_diff
 
 router = APIRouter()
 
@@ -25,6 +26,7 @@ async def analyze_tos(request: AnalyzeRequest):
     risk = compute_score(result["clauses"])
     categories = [c.get("category", "") for c in result["clauses"]]
     alternatives = get_alternatives(request.domain, risk["score"], result.get("tldr", ""), categories)
+    diff = compute_diff(request.domain) if request.domain else None
 
     return AnalyzeResponse(
         tldr=result["tldr"],
@@ -33,4 +35,5 @@ async def analyze_tos(request: AnalyzeRequest):
         analyzed_at=datetime.now(timezone.utc).isoformat(),
         risk=risk,
         alternatives=alternatives,
+        diff=diff,
     )
