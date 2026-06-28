@@ -1,28 +1,33 @@
 const API_URL = "http://localhost:8000/analyze";
 
-// Keyed by tabId: { status: "loading"|"success"|"error"|"no_tos", data: {...} }
-const tabResults = {};
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab?.id;
 
   if (message.type === "NO_TOS_DETECTED") {
-    if (tabId) tabResults[tabId] = { status: "no_tos", data: null };
+    if (tabId) setResult(tabId, { status: "no_tos", data: null });
     return;
   }
 
   if (message.type === "TOS_TEXT") {
-    if (tabId) tabResults[tabId] = { status: "loading", data: null };
-    analyzeText(message.text, message.domain, tabId);
+    if (tabId) {
+      setResult(tabId, { status: "loading", data: null });
+      analyzeText(message.text, message.domain, tabId);
+    }
     return;
   }
 
   if (message.type === "GET_RESULT") {
-    const activeTab = message.tabId;
-    sendResponse(tabResults[activeTab] ?? { status: "no_tos", data: null });
-    return true;
+    const key = `result_${message.tabId}`;
+    chrome.storage.session.get(key, (items) => {
+      sendResponse(items[key] ?? { status: "no_tos", data: null });
+    });
+    return true; // keep message channel open for async response
   }
 });
+
+function setResult(tabId, value) {
+  chrome.storage.session.set({ [`result_${tabId}`]: value });
+}
 
 async function analyzeText(text, domain, tabId) {
   try {
@@ -35,8 +40,8 @@ async function analyzeText(text, domain, tabId) {
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
-    if (tabId) tabResults[tabId] = { status: "success", data };
+    setResult(tabId, { status: "success", data });
   } catch (err) {
-    if (tabId) tabResults[tabId] = { status: "error", data: { message: err.message } };
+    setResult(tabId, { status: "error", data: { message: err.message } });
   }
 }
