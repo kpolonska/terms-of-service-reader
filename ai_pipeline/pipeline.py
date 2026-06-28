@@ -1,5 +1,5 @@
 import os
-import anthropic
+from openai import OpenAI
 
 from prompt import build_prompt
 from parser import parse_response
@@ -14,21 +14,26 @@ def analyze_tos(text: str, domain: str | None = None) -> dict:
         return {**cached, "cached": True}
 
     system_prompt, user_message = build_prompt(text)
-    raw_response = _call_claude(system_prompt, user_message)
+    raw_response = _call_llm(system_prompt, user_message)
     result = parse_response(raw_response)
 
     store_result(text_hash, domain, result)
     return {**result, "cached": False}
 
 
-def _call_claude(system_prompt: str, user_message: str) -> str:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
+def _call_llm(system_prompt: str, user_message: str) -> str:
+    client = OpenAI(
+        api_key=os.environ["LLMAPI_KEY"],
+        base_url=os.environ.get("LLMAPI_BASE_URL", "https://api.llmapi.ai/v1"),
     )
 
-    return message.content[0].text
+    response = client.chat.completions.create(
+        model="claude-haiku-4-5",
+        max_tokens=2048,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+    )
+
+    return response.choices[0].message.content
