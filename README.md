@@ -452,6 +452,45 @@ No terminal needed. Load `extension/` in Chrome via `chrome://extensions` and te
 
 ---
 
+## Planned features
+
+The following enhancements are planned for future implementation. Each feature spans multiple parts of the system (extension, backend, ai\_pipeline). See `PLAN.md` for detailed implementation breakdown per feature.
+
+### Data protection
+
+**1. ToS version diffing**
+Store each analyzed version of a ToS by domain. When the same domain is analyzed again and the text has changed, detect the diff and highlight which clauses changed severity (e.g. "data\_sharing\_third\_parties was medium → now high"). Requires: new `versions` table in SQLite, diff logic in backend, UI diff view in popup.
+
+**2. User risk profile**
+Let the user select a profile (General user / Journalist / Activist / Business) before or after analysis. Each profile reweights which clause categories are most important and adjusts the warnings shown. Requires: profile selector in popup, profile param in `POST /analyze`, adjusted scoring in ai\_pipeline.
+
+**3. Alternatives recommendation**
+When a ToS scores poorly overall, suggest privacy-respecting alternative services. Example: if Google Docs ToS is analyzed and scores D or F, suggest Notion or Cryptpad with a brief reason. Alternatives list can be a static lookup table keyed by domain category. Requires: new `alternatives` field in response schema, lookup table in backend, display card in popup.
+
+**4. Change alerts**
+User can opt in to be notified when a previously analyzed site updates its ToS. Backend periodically re-fetches and re-analyzes stored domains, compares hash to cached version, and triggers a Chrome notification if changed. Requires: `GET /subscribe` endpoint, background fetch job, Chrome notifications API in service worker.
+
+### User understanding
+
+**5. Deep-explain mode**
+Clicking a clause card sends a follow-up request for a longer explanation with a concrete real-world example of how that clause could affect the user personally. Requires: new `POST /explain` endpoint, second Claude call with a focused prompt, expandable card UI in popup.
+
+**6. Overall privacy score (A–F)**
+Compute a letter grade for each analyzed ToS based on clause severity distribution: count of high/medium/low findings, presence of specific high-risk categories. Display prominently at the top of the popup. Requires: scoring function in backend, `score` field added to response schema, score badge in popup.
+
+**7. Toolbar badge color**
+Show a colored dot on the extension icon automatically when a ToS page is detected — red (high risk), yellow (medium), green (low or unknown). No click needed. Requires: backend returns score, service worker calls `chrome.action.setBadgeBackgroundColor` and `setBadgeText`.
+
+### Academic / research value
+
+**8. Statistics dashboard**
+New popup tab showing aggregated stats across all analyzed sites stored in the local cache: most common clause categories, most dangerous domains, distribution across academic concepts (Zuboff / Van Dijck / Srnicek / Pasquale). Requires: new `GET /stats` endpoint on backend, aggregation queries on SQLite, new tab in popup UI.
+
+**9. PDF report export**
+Generate a formatted PDF of the full ToS analysis (TLDR, all clauses, score, metadata) that the user can download or share. Requires: PDF generation library in backend (e.g. `reportlab` or `weasyprint`), new `GET /report/{domain}` endpoint, download button in popup.
+
+---
+
 ## Common problems
 
 **Extension popup says "No Terms of Service detected"**
