@@ -6,6 +6,14 @@ function showState(id) {
 }
 
 function renderResult(data) {
+  if (data.risk) {
+    const badge = document.getElementById("risk-badge");
+    const label = data.risk.label.toLowerCase();
+    badge.className = `risk-badge risk-${label}`;
+    document.getElementById("risk-score").textContent = `${data.risk.score}/10`;
+    document.getElementById("risk-label").textContent = data.risk.label;
+  }
+
   document.getElementById("tldr-text").textContent = data.tldr;
 
   const list = document.getElementById("clauses-list");
@@ -15,16 +23,31 @@ function renderResult(data) {
     const card = document.createElement("div");
     card.className = `clause-card severity-${clause.severity}`;
 
-    card.innerHTML = `
-      <p class="clause-quote">"${clause.quote}"</p>
-      <p class="clause-plain">${clause.plain_english}</p>
-      <div class="clause-meta">
-        <span class="badge">${clause.category}</span>
-        <span class="badge">${clause.severity.toUpperCase()}</span>
-        <span class="badge concept">${clause.concept}</span>
-      </div>
-    `;
+    const quote = document.createElement("p");
+    quote.className = "clause-quote";
+    quote.textContent = `"${clause.quote}"`;
 
+    const plain = document.createElement("p");
+    plain.className = "clause-plain";
+    plain.textContent = clause.plain_english;
+
+    const meta = document.createElement("div");
+    meta.className = "clause-meta";
+
+    const makeBadge = (text, extra = "") => {
+      const span = document.createElement("span");
+      span.className = `badge${extra ? " " + extra : ""}`;
+      span.textContent = text;
+      return span;
+    };
+
+    meta.appendChild(makeBadge(clause.category.replaceAll("_", " ")));
+    meta.appendChild(makeBadge(clause.severity.toUpperCase(), "severity-badge"));
+    meta.appendChild(makeBadge(clause.concept, "concept"));
+
+    card.appendChild(quote);
+    card.appendChild(plain);
+    card.appendChild(meta);
     list.appendChild(card);
   });
 

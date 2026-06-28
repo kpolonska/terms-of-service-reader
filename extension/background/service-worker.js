@@ -29,6 +29,13 @@ function setResult(tabId, value) {
   chrome.storage.session.set({ [`result_${tabId}`]: value });
 }
 
+const RISK_BADGE_COLORS = {
+  SAFE:      "#065f46",
+  CAUTION:   "#92400e",
+  RISKY:     "#9a3412",
+  DANGEROUS: "#991b1b",
+};
+
 async function analyzeText(text, domain, tabId) {
   try {
     const response = await fetch(API_URL, {
@@ -41,7 +48,17 @@ async function analyzeText(text, domain, tabId) {
 
     const data = await response.json();
     setResult(tabId, { status: "success", data });
+
+    if (data.risk) {
+      chrome.action.setBadgeText({ text: String(data.risk.score), tabId });
+      chrome.action.setBadgeBackgroundColor({
+        color: RISK_BADGE_COLORS[data.risk.label] ?? "#555",
+        tabId,
+      });
+    }
   } catch (err) {
     setResult(tabId, { status: "error", data: { message: err.message } });
+    chrome.action.setBadgeText({ text: "!", tabId });
+    chrome.action.setBadgeBackgroundColor({ color: "#555", tabId });
   }
 }
