@@ -1,3 +1,55 @@
+const EXPLAIN_URL = "http://localhost:8000/explain";
+
+async function handleExplain(clause, card, btn) {
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+
+  try {
+    const res = await fetch(EXPLAIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quote: clause.quote, category: clause.category }),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    btn.remove();
+    renderExplanation(card, data);
+  } catch {
+    btn.disabled = false;
+    btn.textContent = "Explain more";
+  }
+}
+
+function renderExplanation(card, data) {
+  const section = document.createElement("div");
+  section.className = "explain-section";
+
+  const makeBlock = (label, text) => {
+    const wrap = document.createElement("div");
+    wrap.className = "explain-block";
+
+    const heading = document.createElement("p");
+    heading.className = "explain-heading";
+    heading.textContent = label;
+
+    const body = document.createElement("p");
+    body.className = "explain-body";
+    body.textContent = text;
+
+    wrap.appendChild(heading);
+    wrap.appendChild(body);
+    return wrap;
+  };
+
+  section.appendChild(makeBlock("What this really means", data.detailed_explanation));
+  section.appendChild(makeBlock("Real-world example", data.real_world_example));
+  section.appendChild(makeBlock("What you can do", data.what_you_can_do));
+
+  card.appendChild(section);
+}
+
 function showState(id) {
   ["state-loading", "state-no-tos", "state-error", "state-result"].forEach((s) => {
     document.getElementById(s).classList.add("hidden");
@@ -45,9 +97,15 @@ function renderResult(data) {
     meta.appendChild(makeBadge(clause.severity.toUpperCase(), "severity-badge"));
     meta.appendChild(makeBadge(clause.concept, "concept"));
 
+    const explainBtn = document.createElement("button");
+    explainBtn.className = "explain-btn";
+    explainBtn.textContent = "Explain more";
+    explainBtn.addEventListener("click", () => handleExplain(clause, card, explainBtn));
+
     card.appendChild(quote);
     card.appendChild(plain);
     card.appendChild(meta);
+    card.appendChild(explainBtn);
     list.appendChild(card);
   });
 
