@@ -194,8 +194,15 @@ function renderAlternatives(alternatives) {
   });
 }
 
+const PROFILE_DESCS = {
+  general:    "Standard analysis of key clauses and risks.",
+  journalist: "Focus on data collection, surveillance, and press freedom clauses.",
+  activist:   "Highlights censorship, account termination, and civil rights risks.",
+  business:   "Examines liability, IP ownership, and commercial use restrictions.",
+};
+
 function showState(id) {
-  ["state-loading", "state-no-tos", "state-error", "state-result"].forEach((s) => {
+  ["state-idle", "state-loading", "state-no-tos", "state-error", "state-result"].forEach((s) => {
     document.getElementById(s).classList.add("hidden");
   });
   document.getElementById(id).classList.remove("hidden");
@@ -284,14 +291,94 @@ function applyResult(result) {
   }
 }
 
+let activeProfile = "general";
+
 async function initProfile() {
   const select = document.getElementById("profile-select");
   const stored = await chrome.storage.local.get("profile");
-  if (stored.profile) select.value = stored.profile;
+  activeProfile = stored.profile ?? "general";
+  if (select) select.value = activeProfile;
 
-  select.addEventListener("change", () => {
-    chrome.storage.local.set({ profile: select.value });
+  if (select) {
+    select.addEventListener("change", () => {
+      activeProfile = select.value;
+      chrome.storage.local.set({ profile: activeProfile });
+    });
+  }
+}
+
+function initIdleProfilePicker() {
+  const btns = document.querySelectorAll(".profile-btn");
+  const desc = document.getElementById("profile-desc");
+
+  btns.forEach((btn) => {
+    if (btn.dataset.profile === activeProfile) btn.classList.add("active");
+    else btn.classList.remove("active");
+
+    btn.addEventListener("click", () => {
+      btns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeProfile = btn.dataset.profile;
+      chrome.storage.local.set({ profile: activeProfile });
+      if (desc) desc.textContent = PROFILE_DESCS[activeProfile] ?? "";
+      // sync header select
+      const select = document.getElementById("profile-select");
+      if (select) select.value = activeProfile;
+    });
   });
+
+  if (desc) desc.textContent = PROFILE_DESCS[activeProfile] ?? "";
+}
+
+async function fetchTosText(tabId) {
+  let resp = await new Promise((resolve) => {
+    chrome.tabs.sendMessage(tabId, { type: "GET_TOS_TEXT" }, (r) => {
+      if (chrome.runtime.lastError) resolve(null);
+      else resolve(r);
+    });
+  });
+
+  if (!resp) {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: ["content/content.js"] });
+      await new Promise(r => setTimeout(r, 600));
+      resp = await new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, { type: "GET_TOS_TEXT" }, (r) => {
+          if (chrome.runtime.lastError) resolve(null);
+          else resolve(r);
+        });
+      });
+    } catch {
+      return null;
+    }
+  }
+  return resp?.text ? resp : null;
+}
+
+async function startAnalysis(tab) {
+  showState("state-loading");
+
+  const tosResponse = await fetchTosText(tab.id);
+  if (!tosResponse) {
+    showState("state-no-tos");
+    return;
+  }
+
+  await chrome.runtime.sendMessage({
+    type: "TOS_TEXT_FROM_POPUP",
+    text: tosResponse.text,
+    domain: tosResponse.domain,
+    tabId: tab.id,
+    profile: activeProfile,
+  });
+
+  const storageKey = `result_${tab.id}`;
+  const listener = (changes, area) => {
+    if (area !== "session" || !changes[storageKey]) return;
+    chrome.storage.onChanged.removeListener(listener);
+    applyResult(changes[storageKey].newValue);
+  };
+  chrome.storage.onChanged.addListener(listener);
 }
 
 async function init() {
@@ -300,12 +387,10 @@ async function init() {
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  const result = await chrome.runtime.sendMessage({
-    type: "GET_RESULT",
-    tabId: tab.id,
-  });
+  const result = await chrome.runtime.sendMessage({ type: "GET_RESULT", tabId: tab.id });
 
-  if (result && result.status === "success") {
+  // show cached result only if same profile
+  if (result && result.status === "success" && result.profile === activeProfile) {
     applyResult(result);
     return;
   }
@@ -322,86 +407,40 @@ async function init() {
     return;
   }
 
-  // pending or no_tos — request text on-demand from content script
-  try {
-    let tosResponse = await new Promise((resolve) => {
-      chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT" }, (resp) => {
-        if (chrome.runtime.lastError) resolve(null); // content script not injected
-        else resolve(resp);
-      });
-    });
+  // show idle screen — let user pick profile then click Analyze
+  showState("state-idle");
+  initIdleProfilePicker();
 
-    if (!tosResponse) {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["content/content.js"],
-      });
-      await new Promise(r => setTimeout(r, 500));
-      tosResponse = await new Promise((resolve) => {
-        chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT" }, (resp) => {
-          if (chrome.runtime.lastError) resolve(null);
-          else resolve(resp);
-        });
-      });
-    }
-
-    if (!tosResponse || !tosResponse.text) {
-      showState("state-no-tos");
-      return;
-    }
-
-    await chrome.runtime.sendMessage({
-      type: "TOS_TEXT_FROM_POPUP",
-      text: tosResponse.text,
-      domain: tosResponse.domain,
-      tabId: tab.id,
-    });
-
-    showState("state-loading");
-    const storageKey = `result_${tab.id}`;
-    const listener = (changes, area) => {
-      if (area !== "session" || !changes[storageKey]) return;
-      chrome.storage.onChanged.removeListener(listener);
-      applyResult(changes[storageKey].newValue);
-    };
-    chrome.storage.onChanged.addListener(listener);
-  } catch {
-    showState("state-no-tos");
-  }
+  document.getElementById("analyze-btn").addEventListener("click", () => startAnalysis(tab));
 }
 
 async function retryExtract(tab) {
-  showState("state-loading");
-
   const delays = [1500, 2500, 4000];
   for (const delay of delays) {
+    showState("state-loading");
     await new Promise(r => setTimeout(r, delay));
-    try {
-      const tosResponse = await new Promise((resolve, reject) => {
-        chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT", force: true }, (resp) => {
-          if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
-          else resolve(resp);
-        });
+    const tosResponse = await new Promise((resolve) => {
+      chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT", force: true }, (resp) => {
+        if (chrome.runtime.lastError) resolve(null);
+        else resolve(resp);
       });
-
-      if (tosResponse && tosResponse.text) {
-        await chrome.runtime.sendMessage({
-          type: "TOS_TEXT_FROM_POPUP",
-          text: tosResponse.text,
-          domain: tosResponse.domain,
-          tabId: tab.id,
-        });
-        showState("state-loading");
-        const storageKey = `result_${tab.id}`;
-        const listener = (changes, area) => {
-          if (area !== "session" || !changes[storageKey]) return;
-          chrome.storage.onChanged.removeListener(listener);
-          applyResult(changes[storageKey].newValue);
-        };
-        chrome.storage.onChanged.addListener(listener);
-        return;
-      }
-    } catch {
+    });
+    if (tosResponse && tosResponse.text) {
+      await chrome.runtime.sendMessage({
+        type: "TOS_TEXT_FROM_POPUP",
+        text: tosResponse.text,
+        domain: tosResponse.domain,
+        tabId: tab.id,
+        profile: activeProfile,
+      });
+      const storageKey = `result_${tab.id}`;
+      const listener = (changes, area) => {
+        if (area !== "session" || !changes[storageKey]) return;
+        chrome.storage.onChanged.removeListener(listener);
+        applyResult(changes[storageKey].newValue);
+      };
+      chrome.storage.onChanged.addListener(listener);
+      return;
     }
   }
   showState("state-no-tos");

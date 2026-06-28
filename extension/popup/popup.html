@@ -24,6 +24,21 @@
         </div>
       </header>
 
+      <!-- Idle: choose profile then analyze -->
+      <div id="state-idle" class="state hidden">
+        <div class="idle-profile-row">
+          <span class="idle-label">Analyze as</span>
+          <div class="idle-profiles">
+            <button class="profile-btn active" data-profile="general">General</button>
+            <button class="profile-btn" data-profile="journalist">Journalist</button>
+            <button class="profile-btn" data-profile="activist">Activist</button>
+            <button class="profile-btn" data-profile="business">Business</button>
+          </div>
+        </div>
+        <div class="profile-desc" id="profile-desc">Standard analysis of key clauses and risks.</div>
+        <button id="analyze-btn" class="analyze-btn">Analyze this page</button>
+      </div>
+
       <!-- Loading -->
       <div id="state-loading" class="state hidden">
         <div class="spinner"></div>

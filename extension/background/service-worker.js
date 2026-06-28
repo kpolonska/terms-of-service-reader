@@ -17,9 +17,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "TOS_TEXT_FROM_POPUP") {
-    const { text, domain, tabId } = message;
+    const { text, domain, tabId, profile } = message;
     setResult(tabId, { status: "loading", data: null });
-    analyzeText(text, domain, tabId);
+    analyzeText(text, domain, tabId, profile);
     sendResponse({ ok: true });
     return true;
   }
@@ -44,10 +44,10 @@ const RISK_BADGE_COLORS = {
   DANGEROUS: "#991b1b",
 };
 
-async function analyzeText(text, domain, tabId) {
+async function analyzeText(text, domain, tabId, profileOverride) {
   try {
     const stored = await chrome.storage.local.get("profile");
-    const profile = stored.profile ?? "general";
+    const profile = profileOverride ?? stored.profile ?? "general";
 
     const response = await fetch(API_URL, {
       method: "POST",
@@ -58,7 +58,7 @@ async function analyzeText(text, domain, tabId) {
     if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data = await response.json();
-    setResult(tabId, { status: "success", data, domain });
+    setResult(tabId, { status: "success", data, domain, profile });
 
     if (data.diff?.has_changes && domain) {
       const { subscriptions = [] } = await chrome.storage.local.get("subscriptions");
