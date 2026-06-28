@@ -301,8 +301,13 @@ async function initProfile() {
 
   if (select) {
     select.addEventListener("change", () => {
-      activeProfile = select.value;
-      chrome.storage.local.set({ profile: activeProfile });
+      const newProfile = select.value;
+      if (newProfile !== activeProfile) {
+        activeProfile = newProfile;
+        chrome.storage.local.set({ profile: activeProfile });
+        // Reload popup to show idle state with new profile
+        location.reload();
+      }
     });
   }
 }

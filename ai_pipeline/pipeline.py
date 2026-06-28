@@ -14,7 +14,7 @@ from cache import get_cached_alternatives, store_alternatives
 def analyze_tos(text: str, domain: str | None = None, profile: str = "general") -> dict:
     text_hash = compute_hash(text)
 
-    cached = get_cached(text_hash)
+    cached = get_cached(text_hash, profile)
     if cached:
         return {**cached, "cached": True}
 
@@ -22,7 +22,7 @@ def analyze_tos(text: str, domain: str | None = None, profile: str = "general") 
     raw_response = _call_llm(system_prompt, user_message)
     result = parse_response(raw_response)
 
-    store_result(text_hash, domain, result)
+    store_result(text_hash, domain, result, profile)
     return {**result, "cached": False}
 
 
@@ -62,6 +62,10 @@ def explain_clause(quote: str, category: str, profile: str = "general") -> dict:
 
 
 def _call_llm(system_prompt: str, user_message: str) -> str:
+    import sys
+    print(f"[DEBUG] System prompt length: {len(system_prompt)}", file=sys.stderr)
+    print(f"[DEBUG] System prompt includes 'CRITICAL': {'CRITICAL' in system_prompt}", file=sys.stderr)
+
     client = OpenAI(
         api_key=os.environ["LLMAPI_KEY"],
         base_url=os.environ.get("LLMAPI_BASE_URL", "https://api.llmapi.ai/v1"),
