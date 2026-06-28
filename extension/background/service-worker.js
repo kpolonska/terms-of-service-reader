@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "GET_RESULT") {
     const key = `result_${message.tabId}`;
     chrome.storage.session.get(key, (items) => {
-      sendResponse(items[key] ?? { status: "no_tos", data: null });
+      sendResponse(items[key] ?? { status: "pending", data: null });
     });
     return true; // keep message channel open for async response
   }

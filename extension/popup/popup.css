@@ -422,3 +422,19 @@ header {
 }
 
 .download-btn:hover { opacity: 0.82; }
+
+.retry-btn {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.retry-btn:hover { background: #e0e7ff; }

@@ -322,14 +322,28 @@ async function init() {
     return;
   }
 
-  // No cached result — request text on-demand from content script
+  // pending or no_tos — request text on-demand from content script
   try {
-    const tosResponse = await new Promise((resolve, reject) => {
+    let tosResponse = await new Promise((resolve) => {
       chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT" }, (resp) => {
-        if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+        if (chrome.runtime.lastError) resolve(null); // content script not injected
         else resolve(resp);
       });
     });
+
+    if (!tosResponse) {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content/content.js"],
+      });
+      await new Promise(r => setTimeout(r, 500));
+      tosResponse = await new Promise((resolve) => {
+        chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT" }, (resp) => {
+          if (chrome.runtime.lastError) resolve(null);
+          else resolve(resp);
+        });
+      });
+    }
 
     if (!tosResponse || !tosResponse.text) {
       showState("state-no-tos");
@@ -356,4 +370,46 @@ async function init() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", init);
+async function retryExtract(tab) {
+  showState("state-loading");
+
+  const delays = [1500, 2500, 4000];
+  for (const delay of delays) {
+    await new Promise(r => setTimeout(r, delay));
+    try {
+      const tosResponse = await new Promise((resolve, reject) => {
+        chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT", force: true }, (resp) => {
+          if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+          else resolve(resp);
+        });
+      });
+
+      if (tosResponse && tosResponse.text) {
+        await chrome.runtime.sendMessage({
+          type: "TOS_TEXT_FROM_POPUP",
+          text: tosResponse.text,
+          domain: tosResponse.domain,
+          tabId: tab.id,
+        });
+        showState("state-loading");
+        const storageKey = `result_${tab.id}`;
+        const listener = (changes, area) => {
+          if (area !== "session" || !changes[storageKey]) return;
+          chrome.storage.onChanged.removeListener(listener);
+          applyResult(changes[storageKey].newValue);
+        };
+        chrome.storage.onChanged.addListener(listener);
+        return;
+      }
+    } catch {
+    }
+  }
+  showState("state-no-tos");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await init();
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const retryBtn = document.getElementById("retry-btn");
+  if (retryBtn) retryBtn.addEventListener("click", () => retryExtract(tab));
+});

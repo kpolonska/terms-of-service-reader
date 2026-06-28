@@ -46,7 +46,8 @@ function extractText() {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "GET_TOS_TEXT") {
-    if (!isTosPage()) {
+    const force = message.force || false;
+    if (!force && !isTosPage()) {
       sendResponse({ text: null });
       return true;
     }
