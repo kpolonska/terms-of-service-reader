@@ -49,3 +49,87 @@ def test_parse_invalid_raises():
         assert False, "Should have raised"
     except ValueError:
         pass
+
+
+INVALID_CATEGORY = """
+{
+  "tldr": "Test summary.",
+  "clauses": [
+    {
+      "quote": "We collect data.",
+      "plain_english": "They collect your data.",
+      "category": "data_extraction",
+      "severity": "high",
+      "concept": "Surveillance Capitalism (Zuboff)"
+    }
+  ]
+}
+"""
+
+INVALID_SEVERITY = """
+{
+  "tldr": "Test summary.",
+  "clauses": [
+    {
+      "quote": "We collect data.",
+      "plain_english": "They collect your data.",
+      "category": "data_collection",
+      "severity": "critical",
+      "concept": "Surveillance Capitalism (Zuboff)"
+    }
+  ]
+}
+"""
+
+INVALID_CONCEPT = """
+{
+  "tldr": "Test summary.",
+  "clauses": [
+    {
+      "quote": "We collect data.",
+      "plain_english": "They collect your data.",
+      "category": "data_collection",
+      "severity": "high",
+      "concept": "Made Up Concept (Nobody)"
+    }
+  ]
+}
+"""
+
+MISSING_TLDR = """
+{
+  "clauses": []
+}
+"""
+
+
+def test_parse_invalid_category_raises_value_error():
+    try:
+        parse_response(INVALID_CATEGORY)
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+
+def test_parse_invalid_severity_raises_value_error():
+    try:
+        parse_response(INVALID_SEVERITY)
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+
+def test_parse_invalid_concept_raises_value_error():
+    try:
+        parse_response(INVALID_CONCEPT)
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+
+def test_parse_missing_tldr_raises_value_error():
+    try:
+        parse_response(MISSING_TLDR)
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass

@@ -4,11 +4,13 @@ import sqlite3
 import os
 from datetime import datetime, timezone
 
-DB_PATH = os.environ.get("DATABASE_PATH", "analyses.db")
+
+def _db_path() -> str:
+    return os.environ.get("DATABASE_PATH", "analyses.db")
 
 
 def _get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(_db_path())
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -31,6 +33,7 @@ def compute_hash(text: str) -> str:
 
 
 def get_cached(text_hash: str) -> dict | None:
+    init_db()
     with _get_connection() as conn:
         row = conn.execute(
             "SELECT result_json FROM analyses WHERE text_hash = ?", (text_hash,)
@@ -41,6 +44,7 @@ def get_cached(text_hash: str) -> dict | None:
 
 
 def store_result(text_hash: str, domain: str | None, result: dict):
+    init_db()
     with _get_connection() as conn:
         conn.execute(
             """
@@ -50,6 +54,3 @@ def store_result(text_hash: str, domain: str | None, result: dict):
             """,
             (text_hash, domain, json.dumps(result), datetime.now(timezone.utc).isoformat()),
         )
-
-
-init_db()
