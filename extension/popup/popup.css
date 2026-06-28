@@ -36,6 +36,28 @@ header {
   justify-content: space-between;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-select {
+  font-size: 11px;
+  font-family: inherit;
+  color: #555;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  outline: none;
+}
+
+.profile-select:hover {
+  background: #ebebeb;
+}
+
 .header-link {
   font-size: 12px;
   color: #555;
@@ -197,6 +219,53 @@ header {
 .badge.concept {
   background: #eef2ff;
   color: #3730a3;
+}
+
+/* Alternatives */
+#alternatives-section {
+  margin-bottom: 14px;
+}
+
+#alternatives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alt-card {
+  padding: 9px 11px;
+  border-radius: 6px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  transition: background 0.15s;
+}
+
+.alt-card:hover {
+  background: #dcfce7;
+}
+
+.alt-top {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.alt-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.alt-url {
+  font-size: 10px;
+  color: #888;
+}
+
+.alt-reason {
+  font-size: 11px;
+  color: #374151;
+  line-height: 1.45;
 }
 
 .download-btn {

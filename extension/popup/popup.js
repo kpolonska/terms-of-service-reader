@@ -50,6 +50,55 @@ function renderExplanation(card, data) {
   card.appendChild(section);
 }
 
+function renderAlternatives(alternatives) {
+  const section = document.getElementById("alternatives-section");
+  const list = document.getElementById("alternatives-list");
+  list.replaceChildren();
+
+  if (!alternatives.length) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  section.classList.remove("hidden");
+
+  alternatives.forEach((alt) => {
+    const card = document.createElement("div");
+    card.className = "alt-card";
+    if (alt.url) card.style.cursor = "pointer";
+
+    const top = document.createElement("div");
+    top.className = "alt-top";
+
+    const name = document.createElement("span");
+    name.className = "alt-name";
+    name.textContent = alt.name;
+
+    const url = document.createElement("span");
+    url.className = "alt-url";
+    url.textContent = alt.url;
+
+    top.appendChild(name);
+    top.appendChild(url);
+
+    const reason = document.createElement("p");
+    reason.className = "alt-reason";
+    reason.textContent = alt.reason;
+
+    card.appendChild(top);
+    card.appendChild(reason);
+
+    if (alt.url) {
+      card.addEventListener("click", () => {
+        const href = alt.url.startsWith("http") ? alt.url : `https://${alt.url}`;
+        chrome.tabs.create({ url: href });
+      });
+    }
+
+    list.appendChild(card);
+  });
+}
+
 function showState(id) {
   ["state-loading", "state-no-tos", "state-error", "state-result"].forEach((s) => {
     document.getElementById(s).classList.add("hidden");
@@ -65,6 +114,8 @@ function renderResult(data, domain) {
     document.getElementById("risk-score").textContent = `${data.risk.score}/10`;
     document.getElementById("risk-label").textContent = data.risk.label;
   }
+
+  renderAlternatives(data.alternatives ?? []);
 
   document.getElementById("tldr-text").textContent = data.tldr;
 
@@ -133,8 +184,19 @@ function applyResult(result) {
   }
 }
 
+async function initProfile() {
+  const select = document.getElementById("profile-select");
+  const stored = await chrome.storage.local.get("profile");
+  if (stored.profile) select.value = stored.profile;
+
+  select.addEventListener("change", () => {
+    chrome.storage.local.set({ profile: select.value });
+  });
+}
+
 async function init() {
   showState("state-loading");
+  await initProfile();
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 

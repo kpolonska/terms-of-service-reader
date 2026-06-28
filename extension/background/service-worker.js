@@ -38,10 +38,13 @@ const RISK_BADGE_COLORS = {
 
 async function analyzeText(text, domain, tabId) {
   try {
+    const stored = await chrome.storage.local.get("profile");
+    const profile = stored.profile ?? "general";
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, domain }),
+      body: JSON.stringify({ text, domain, profile }),
     });
 
     if (!response.ok) throw new Error(`API error: ${response.status}`);

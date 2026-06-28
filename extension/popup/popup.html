@@ -10,7 +10,15 @@
     <div id="app">
       <header>
         <span class="logo">ToS Reader</span>
-        <a href="stats.html" class="header-link">Stats</a>
+        <div class="header-right">
+          <select id="profile-select" class="profile-select" title="Your profile">
+            <option value="general">General</option>
+            <option value="journalist">Journalist</option>
+            <option value="activist">Activist</option>
+            <option value="business">Business</option>
+          </select>
+          <a href="stats.html" class="header-link">Stats</a>
+        </div>
       </header>
 
       <!-- States -->
@@ -40,6 +48,11 @@
         <section id="tldr-section">
           <h2>Summary</h2>
           <p id="tldr-text"></p>
+        </section>
+
+        <section id="alternatives-section" class="hidden">
+          <h2>Consider instead</h2>
+          <div id="alternatives-list"></div>
         </section>
 
         <section id="clauses-section">
