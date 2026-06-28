@@ -11,7 +11,7 @@ function isTosPage() {
 
   const headings = [...document.querySelectorAll("h1, h2")];
   return headings.some((h) =>
-    TOS_HEADING_PHRASES.some((phrase) => h.innerText?.toLowerCase().includes(phrase))
+    TOS_HEADING_PHRASES.some((phrase) => h.textContent?.toLowerCase().includes(phrase))
   );
 }
 
@@ -20,6 +20,7 @@ function extractText() {
     "nav", "header", "footer", "aside",
     "script", "style", "noscript",
     ".cookie-banner", "[role='banner']", "[role='navigation']",
+    "svg", "img", "button",
   ];
   const clone = document.body.cloneNode(true);
 
@@ -27,11 +28,17 @@ function extractText() {
     clone.querySelectorAll(sel).forEach((el) => el.remove());
   });
 
-  const main =
+  let main =
     clone.querySelector("main") ||
     clone.querySelector("article") ||
-    clone.querySelector("[role='main']") ||
-    clone;
+    clone.querySelector("[role='main']");
+
+  if (!main) {
+    const divs = [...clone.querySelectorAll("div")].sort(
+      (a, b) => (b.textContent?.length || 0) - (a.textContent?.length || 0)
+    );
+    main = divs[0] || clone;
+  }
 
   const text = main.textContent || "";
   return text.replace(/\s+/g, " ").trim().slice(0, MAX_TEXT_LENGTH);

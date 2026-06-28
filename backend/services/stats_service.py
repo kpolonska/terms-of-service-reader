@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 _project_root = Path(__file__).resolve().parent.parent.parent
-load_dotenv(_project_root / ".env")
+load_dotenv(_project_root / ".env", override=True)
 
 from services.scoring_service import compute_score
 

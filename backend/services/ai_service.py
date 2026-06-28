@@ -28,11 +28,8 @@ def analyze(text: str, domain: str | None = None, profile: str = "general") -> d
     except openai.RateLimitError as e:
         raise RateLimitError("Too many requests. Please wait and try again.") from e
     except (openai.APIConnectionError, openai.APITimeoutError) as e:
-        print(f"[ai_service] connection/timeout error: {type(e).__name__}: {e}", flush=True)
         raise TimeoutError(f"AI service unreachable: {type(e).__name__}: {e}") from e
     except openai.APIStatusError as e:
-        print(f"[ai_service] API status error {e.status_code}: {e.message}", flush=True)
         raise TimeoutError(f"AI service returned error {e.status_code}: {e.message}") from e
-    except Exception as e:
-        print(f"[ai_service] unexpected error: {type(e).__name__}: {e}", flush=True)
+    except Exception:
         raise

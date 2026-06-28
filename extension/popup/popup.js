@@ -271,7 +271,6 @@ function renderResult(data, domain) {
     document.getElementById("clauses-section").appendChild(downloadBtn);
   }
 
-  document.getElementById("state-result").classList.remove("hidden");
 }
 
 function applyResult(result) {

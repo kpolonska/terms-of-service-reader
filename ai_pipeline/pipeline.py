@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from openai import OpenAI
 
@@ -35,9 +36,11 @@ def generate_alternatives(domain: str, tldr: str, categories: list[str]) -> list
 
     try:
         raw = raw.strip()
-        alternatives = json.loads(raw) if raw.startswith("[") else json.loads(
-            __import__("re").search(r"\[.*\]", raw, __import__("re").DOTALL).group(0)
-        )
+        if raw.startswith("["):
+            alternatives = json.loads(raw)
+        else:
+            match = re.search(r"\[.*\]", raw, re.DOTALL)
+            alternatives = json.loads(match.group(0)) if match else []
     except Exception:
         alternatives = []
 

@@ -15,16 +15,46 @@ def _get_connection() -> sqlite3.Connection:
     return conn
 
 
+def _migrate_analyses_table(conn: sqlite3.Connection):
+    """Drop UNIQUE constraint on text_hash if present (old schema → new schema)."""
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='analyses'"
+    ).fetchone()
+    if row and "UNIQUE" in (row["sql"] or "").upper():
+        conn.execute("ALTER TABLE analyses RENAME TO _analyses_old")
+        conn.execute("""
+            CREATE TABLE analyses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                text_hash TEXT NOT NULL,
+                domain TEXT,
+                result_json TEXT NOT NULL,
+                analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute(
+            "INSERT INTO analyses (id, text_hash, domain, result_json, analyzed_at) "
+            "SELECT id, text_hash, domain, result_json, analyzed_at FROM _analyses_old"
+        )
+        conn.execute("DROP TABLE _analyses_old")
+
+
 def init_db():
     with _get_connection() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS analyses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text_hash TEXT UNIQUE NOT NULL,
+                text_hash TEXT NOT NULL,
                 domain TEXT,
                 result_json TEXT NOT NULL,
                 analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
+        """)
+        _migrate_analyses_table(conn)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_analyses_text_hash ON analyses (text_hash)
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_analyses_domain ON analyses (domain, analyzed_at)
         """)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS alternatives_cache (
@@ -106,7 +136,8 @@ def get_cached(text_hash: str) -> dict | None:
     init_db()
     with _get_connection() as conn:
         row = conn.execute(
-            "SELECT result_json FROM analyses WHERE text_hash = ?", (text_hash,)
+            "SELECT result_json FROM analyses WHERE text_hash = ? ORDER BY analyzed_at DESC LIMIT 1",
+            (text_hash,),
         ).fetchone()
     if row:
         return json.loads(row["result_json"])
@@ -117,10 +148,6 @@ def store_result(text_hash: str, domain: str | None, result: dict):
     init_db()
     with _get_connection() as conn:
         conn.execute(
-            """
-            INSERT INTO analyses (text_hash, domain, result_json, analyzed_at)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(text_hash) DO NOTHING
-            """,
+            "INSERT INTO analyses (text_hash, domain, result_json, analyzed_at) VALUES (?, ?, ?, ?)",
             (text_hash, domain, json.dumps(result), datetime.now(timezone.utc).isoformat()),
         )

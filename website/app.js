@@ -2,12 +2,109 @@ const API = "http://localhost:8000";
 
 const $ = (id) => document.getElementById(id);
 
-const analyzeBtn  = $("analyze-btn");
-const btnText     = $("btn-text");
-const btnLoading  = $("btn-loading");
-const tosInput    = $("tos-input");
-const domainInput = $("domain-input");
-const profileInput= $("profile-input");
+const analyzeBtn   = $("analyze-btn");
+const btnText      = $("btn-text");
+const btnLoading   = $("btn-loading");
+const tosInput     = $("tos-input");
+const domainInput  = $("domain-input");
+const profileInput = $("profile-input");
+const fileInput    = $("file-input");
+const fileUploadBtn = $("file-upload-btn");
+const fileUploadLabel = $("file-upload-label");
+
+async function extractText(file) {
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  if (ext === "txt") {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsText(file);
+    });
+  }
+
+  if (ext === "html" || ext === "htm") {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(e.target.result, "text/html");
+        ["script","style","noscript","nav","header","footer","aside"].forEach(tag => {
+          doc.querySelectorAll(tag).forEach(el => el.remove());
+        });
+        const main = doc.querySelector("main, article, [role='main']") || doc.body;
+        resolve(main.textContent.replace(/\s+/g, " ").trim());
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsText(file);
+    });
+  }
+
+  if (ext === "pdf") {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const typedArray = new Uint8Array(e.target.result);
+          const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+          let text = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(item => item.str).join(" ") + "\n";
+          }
+          resolve(text.trim());
+        } catch (err) {
+          reject(new Error("Failed to parse PDF: " + err.message));
+        }
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  if (ext === "docx") {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const result = await mammoth.extractRawText({ arrayBuffer: e.target.result });
+          resolve(result.value.trim());
+        } catch (err) {
+          reject(new Error("Failed to parse DOCX: " + err.message));
+        }
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  throw new Error(`Unsupported file type: .${ext}`);
+}
+
+fileUploadBtn.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  fileUploadLabel.textContent = "Reading…";
+  fileUploadBtn.disabled = true;
+
+  try {
+    const text = await extractText(file);
+    tosInput.value = text;
+    fileUploadLabel.textContent = `✓ ${file.name}`;
+  } catch (err) {
+    fileUploadLabel.textContent = "Upload file (.txt, .pdf, .docx, .html)";
+    errorText.textContent = err.message;
+    showResult(resultError);
+  } finally {
+    fileUploadBtn.disabled = false;
+    fileInput.value = "";
+  }
+});
 
 const resultEmpty = $("result-empty");
 const resultError = $("result-error");
