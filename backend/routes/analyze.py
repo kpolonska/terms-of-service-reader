@@ -12,7 +12,7 @@ router = APIRouter()
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_tos(request: AnalyzeRequest):
     try:
-        result = analyze(request.text, request.domain)
+        result = analyze(request.text, request.domain, request.profile)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except RateLimitError as e:

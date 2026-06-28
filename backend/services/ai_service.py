@@ -19,9 +19,9 @@ class RateLimitError(Exception):
     pass
 
 
-def analyze(text: str, domain: str | None = None) -> dict:
+def analyze(text: str, domain: str | None = None, profile: str = "general") -> dict:
     try:
-        return analyze_tos(text, domain)
+        return analyze_tos(text, domain, profile)
     except openai.RateLimitError as e:
         raise RateLimitError("Too many requests. Please wait and try again.") from e
     except (openai.APIConnectionError, openai.APITimeoutError) as e:

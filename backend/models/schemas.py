@@ -26,6 +26,14 @@ VALID_CONCEPTS = {
 class AnalyzeRequest(BaseModel):
     text: str
     domain: str | None = None
+    profile: str = "general"
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, v: str) -> str:
+        if v not in {"general", "journalist", "activist", "business"}:
+            raise ValueError("Invalid profile.")
+        return v
 
     @field_validator("text")
     @classmethod
