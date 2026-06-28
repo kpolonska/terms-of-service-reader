@@ -305,14 +305,13 @@ async function init() {
     tabId: tab.id,
   });
 
-  if (!result || result.status === "no_tos") {
-    showState("state-no-tos");
+  if (result && result.status === "success") {
+    applyResult(result);
     return;
   }
 
-  if (result.status === "loading") {
+  if (result && result.status === "loading") {
     showState("state-loading");
-    // Auto-update when the service worker writes the finished result to storage
     const storageKey = `result_${tab.id}`;
     const listener = (changes, area) => {
       if (area !== "session" || !changes[storageKey]) return;
@@ -323,7 +322,38 @@ async function init() {
     return;
   }
 
-  applyResult(result);
+  // No cached result — request text on-demand from content script
+  try {
+    const tosResponse = await new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(tab.id, { type: "GET_TOS_TEXT" }, (resp) => {
+        if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
+        else resolve(resp);
+      });
+    });
+
+    if (!tosResponse || !tosResponse.text) {
+      showState("state-no-tos");
+      return;
+    }
+
+    await chrome.runtime.sendMessage({
+      type: "TOS_TEXT_FROM_POPUP",
+      text: tosResponse.text,
+      domain: tosResponse.domain,
+      tabId: tab.id,
+    });
+
+    showState("state-loading");
+    const storageKey = `result_${tab.id}`;
+    const listener = (changes, area) => {
+      if (area !== "session" || !changes[storageKey]) return;
+      chrome.storage.onChanged.removeListener(listener);
+      applyResult(changes[storageKey].newValue);
+    };
+    chrome.storage.onChanged.addListener(listener);
+  } catch {
+    showState("state-no-tos");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);

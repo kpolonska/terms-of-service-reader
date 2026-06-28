@@ -16,6 +16,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return;
   }
 
+  if (message.type === "TOS_TEXT_FROM_POPUP") {
+    const { text, domain, tabId } = message;
+    setResult(tabId, { status: "loading", data: null });
+    analyzeText(text, domain, tabId);
+    sendResponse({ ok: true });
+    return true;
+  }
+
   if (message.type === "GET_RESULT") {
     const key = `result_${message.tabId}`;
     chrome.storage.session.get(key, (items) => {

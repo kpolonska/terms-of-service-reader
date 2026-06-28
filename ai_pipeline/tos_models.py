@@ -40,9 +40,13 @@ class Clause(BaseModel):
     @field_validator("concept")
     @classmethod
     def validate_concept(cls, v: str) -> str:
-        if v not in CONCEPTS:
-            raise ValueError(f"Invalid concept: {v}. Must be one of {CONCEPTS}")
-        return v
+        if v in CONCEPTS:
+            return v
+        # Accept short names without author suffix (AI often omits it)
+        for full in CONCEPTS:
+            if full.startswith(v) or v.startswith(full.split(" (")[0]):
+                return full
+        raise ValueError(f"Invalid concept: {v}. Must be one of {CONCEPTS}")
 
 
 class AnalysisResult(BaseModel):

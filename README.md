@@ -40,12 +40,89 @@ Extension popup displays:
 
 ```
 terms-of-service-reader/
+├── website/            ← Landing page + web analysis tool (static HTML)
 ├── extension/          ← Chrome extension (Person A)
 ├── backend/            ← FastAPI server (Person B)
 ├── ai_pipeline/        ← Claude integration + cache (Person C)
 ├── .env.example        ← environment variable template
 └── .gitignore
 ```
+
+---
+
+## Quick start
+
+### Open the website (no backend needed)
+
+```bash
+open website/index.html
+```
+
+Or serve locally (better for testing):
+
+```bash
+cd website
+python3 -m http.server 3000
+# → http://localhost:3000
+```
+
+The landing page, features, and how-it-works sections are fully static. The "Try online" analysis panel requires the backend to be running.
+
+### Run the full stack
+
+**Step 1 — create `.env`:**
+
+```bash
+cp .env.example .env
+# fill in LLMAPI_KEY and LLMAPI_BASE_URL
+```
+
+**Step 2 — start the backend** (from `backend/` directory):
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+# → http://localhost:8000
+```
+
+Verify it works:
+```bash
+curl http://localhost:8000/health
+```
+
+**Step 3 — load the extension in Chrome:**
+
+1. Go to `chrome://extensions`
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked**
+4. Select the `extension/` folder
+
+**Step 4 — open the website:**
+
+```bash
+cd website
+python3 -m http.server 3000
+```
+
+Navigate to `http://localhost:3000`. The "Try online" panel now connects to `http://localhost:8000`.
+
+### API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/analyze` | Analyze ToS text |
+| `POST` | `/explain` | Deep-explain a clause |
+| `GET` | `/report/{domain}` | Download PDF report |
+| `GET` | `/stats` | Aggregated statistics |
+| `POST` | `/subscribe` | Subscribe to ToS change alerts |
+| `DELETE` | `/subscribe/{domain}` | Unsubscribe |
+| `GET` | `/subscriptions` | List subscribed domains |
+| `GET` | `/health` | Health check |
+
+Interactive API docs: `http://localhost:8000/docs`
 
 ---
 
@@ -443,63 +520,63 @@ Run the pipeline against Google, TikTok, and Meta ToS fragments and check:
 
 ## Running everything together locally
 
-Open three terminal windows:
-
 **Terminal 1 — Backend:**
 ```bash
 cd backend
-venv\Scripts\activate   # or source venv/bin/activate on Mac/Linux
+source venv/bin/activate      # Windows: venv\Scripts\activate
 uvicorn main:app --reload
+# Runs at http://localhost:8000
 ```
 
-**Terminal 2 — AI pipeline (only needed for manual testing):**
+**Terminal 2 — Website:**
 ```bash
-cd ai_pipeline
-venv\Scripts\activate
-python -c "from pipeline import analyze_tos; print('pipeline ready')"
+cd website
+python3 -m http.server 3000
+# Runs at http://localhost:3000
 ```
 
 **Terminal 3 — Extension:**
-No terminal needed. Load `extension/` in Chrome via `chrome://extensions` and test on a live ToS page.
+No extra server needed. Load `extension/` in Chrome via `chrome://extensions` → Load unpacked.
+
+The AI pipeline runs inside the backend process — no separate terminal needed. It is loaded automatically when the backend starts.
+
+### Test the analyze endpoint directly
+
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "We may collect your personal data and share it with advertising partners. We can terminate your account at any time for any reason.",
+    "domain": "example.com",
+    "profile": "general"
+  }'
+```
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `LLMAPI_KEY` | API key for LLMapi (Claude access) |
+| `LLMAPI_BASE_URL` | `https://api.llmapi.ai/v1` |
+| `DATABASE_PATH` | Path to SQLite DB (default: `ai_pipeline/analyses.db`) |
 
 ---
 
-## Planned features
+## Implemented features
 
-The following enhancements are planned for future implementation. Each feature spans multiple parts of the system (extension, backend, ai\_pipeline). See `PLAN.md` for detailed implementation breakdown per feature.
+All 9 planned features are implemented. See `PLAN.md` for full technical breakdown.
 
-### Data protection
-
-**1. ToS version diffing**
-Store each analyzed version of a ToS by domain. When the same domain is analyzed again and the text has changed, detect the diff and highlight which clauses changed severity (e.g. "data\_sharing\_third\_parties was medium → now high"). Requires: new `versions` table in SQLite, diff logic in backend, UI diff view in popup.
-
-**2. User risk profile**
-Let the user select a profile (General user / Journalist / Activist / Business) before or after analysis. Each profile reweights which clause categories are most important and adjusts the warnings shown. Requires: profile selector in popup, profile param in `POST /analyze`, adjusted scoring in ai\_pipeline.
-
-**3. Alternatives recommendation**
-When a ToS scores poorly overall, suggest privacy-respecting alternative services. Example: if Google Docs ToS is analyzed and scores D or F, suggest Notion or Cryptpad with a brief reason. Alternatives list can be a static lookup table keyed by domain category. Requires: new `alternatives` field in response schema, lookup table in backend, display card in popup.
-
-**4. Change alerts**
-User can opt in to be notified when a previously analyzed site updates its ToS. Backend periodically re-fetches and re-analyzes stored domains, compares hash to cached version, and triggers a Chrome notification if changed. Requires: `GET /subscribe` endpoint, background fetch job, Chrome notifications API in service worker.
-
-### User understanding
-
-**5. Deep-explain mode**
-Clicking a clause card sends a follow-up request for a longer explanation with a concrete real-world example of how that clause could affect the user personally. Requires: new `POST /explain` endpoint, second Claude call with a focused prompt, expandable card UI in popup.
-
-**6. Overall privacy score (A–F)**
-Compute a letter grade for each analyzed ToS based on clause severity distribution: count of high/medium/low findings, presence of specific high-risk categories. Display prominently at the top of the popup. Requires: scoring function in backend, `score` field added to response schema, score badge in popup.
-
-**7. Toolbar badge color**
-Show a colored dot on the extension icon automatically when a ToS page is detected — red (high risk), yellow (medium), green (low or unknown). No click needed. Requires: backend returns score, service worker calls `chrome.action.setBadgeBackgroundColor` and `setBadgeText`.
-
-### Academic / research value
-
-**8. Statistics dashboard**
-New popup tab showing aggregated stats across all analyzed sites stored in the local cache: most common clause categories, most dangerous domains, distribution across academic concepts (Zuboff / Van Dijck / Srnicek / Pasquale). Requires: new `GET /stats` endpoint on backend, aggregation queries on SQLite, new tab in popup UI.
-
-**9. PDF report export**
-Generate a formatted PDF of the full ToS analysis (TLDR, all clauses, score, metadata) that the user can download or share. Requires: PDF generation library in backend (e.g. `reportlab` or `weasyprint`), new `GET /report/{domain}` endpoint, download button in popup.
+| # | Feature | Where |
+|---|---------|--------|
+| 1 | Risk scoring (1–10 + SAFE/CAUTION/RISKY/DANGEROUS) | `backend/services/scoring_service.py` |
+| 2 | Plain-English clause summaries | `ai_pipeline/prompt.py` |
+| 3 | Deep-explain mode per clause | `POST /explain`, `ai_pipeline/explain_prompt.py` |
+| 4 | PDF report export | `GET /report/{domain}`, `backend/services/report_service.py` |
+| 5 | Privacy alternatives (AI-generated, cached) | `backend/services/alternatives_service.py` |
+| 6 | User risk profiles (General / Journalist / Activist / Business) | `ai_pipeline/prompt.py` → `PROFILE_ADDITIONS` |
+| 7 | Statistics dashboard | `GET /stats`, `extension/popup/stats.html` |
+| 8 | Version diffing (detect ToS changes) | `backend/services/diff_service.py` |
+| 9 | Change alerts (subscribe + Chrome notifications) | `POST /subscribe`, `extension/background/service-worker.js` |
 
 ---
 

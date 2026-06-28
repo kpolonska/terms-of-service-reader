@@ -1,7 +1,7 @@
-from models import CATEGORIES, CONCEPTS, SEVERITY_LEVELS
+from tos_models import CATEGORIES, CONCEPTS, SEVERITY_LEVELS
 
-SYSTEM_PROMPT = f"""You are an expert legal analyst specializing in Terms of Service documents.
-Your job is to help ordinary users understand what they are agreeing to.
+_BASE_SYSTEM_PROMPT = f"""You are an expert legal analyst and privacy rights advocate specializing in Terms of Service documents.
+Your job is to help ordinary users understand what they are agreeing to — in plain language, without legal jargon.
 
 You will be given a Terms of Service text. Identify 5 to 10 of the most important clauses
 and return a structured JSON analysis. You must return ONLY valid JSON — no prose, no markdown,
@@ -34,12 +34,42 @@ Each clause must be assigned one of these categories:
 }}
 """
 
+PROFILE_ADDITIONS = {
+    "journalist": (
+        "\n## User profile: Journalist\n"
+        "This analysis is for a journalist or investigative reporter. "
+        "Prioritize and elevate the severity of clauses about: government/law enforcement data requests, "
+        "anonymity of sources, account termination without notice, metadata retention, "
+        "and any language that could be used to identify confidential sources. "
+        "Mark such clauses as high severity even if they appear standard."
+    ),
+    "activist": (
+        "\n## User profile: Activist\n"
+        "This analysis is for an activist or organizer. "
+        "Prioritize clauses about: surveillance, behavioral profiling, sharing data with governments or "
+        "law enforcement, account suspension policies, content removal, and geolocation tracking. "
+        "These carry elevated personal safety risk for activists and should be marked high severity."
+    ),
+    "business": (
+        "\n## User profile: Business professional\n"
+        "This analysis is for someone using this platform for business purposes. "
+        "Prioritize clauses about: intellectual property and content ownership, "
+        "liability limitations, data portability and account deletion, "
+        "commercial use restrictions, and indemnification clauses. "
+        "Flag anything that could expose the user to legal or financial risk."
+    ),
+    "general": "",
+}
 
-def build_prompt(tos_text: str) -> tuple[str, str]:
+
+def build_prompt(tos_text: str, profile: str = "general") -> tuple[str, str]:
+    profile_addition = PROFILE_ADDITIONS.get(profile, "")
+    system_prompt = _BASE_SYSTEM_PROMPT + profile_addition
+
     user_message = f"""Analyze this Terms of Service document and return the JSON analysis.
 
 --- BEGIN DOCUMENT ---
 {tos_text}
 --- END DOCUMENT ---
 """
-    return SYSTEM_PROMPT, user_message
+    return system_prompt, user_message

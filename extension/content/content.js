@@ -16,7 +16,11 @@ function isTosPage() {
 }
 
 function extractText() {
-  const REMOVE_SELECTORS = ["nav", "header", "footer", "aside", ".cookie-banner", "[role='banner']", "[role='navigation']"];
+  const REMOVE_SELECTORS = [
+    "nav", "header", "footer", "aside",
+    "script", "style", "noscript",
+    ".cookie-banner", "[role='banner']", "[role='navigation']",
+  ];
   const clone = document.body.cloneNode(true);
 
   REMOVE_SELECTORS.forEach((sel) => {
@@ -29,27 +33,32 @@ function extractText() {
     clone.querySelector("[role='main']") ||
     clone;
 
-  const text = main.innerText || main.textContent || "";
+  const text = main.textContent || "";
   return text.replace(/\s+/g, " ").trim().slice(0, MAX_TEXT_LENGTH);
 }
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_TOS_TEXT") {
+    if (!isTosPage()) {
+      sendResponse({ text: null });
+      return true;
+    }
+    const text = extractText();
+    if (!text || text.length < 100) {
+      sendResponse({ text: null });
+      return true;
+    }
+    sendResponse({ text, domain: window.location.hostname });
+    return true;
+  }
+});
+
 function run() {
-  if (!isTosPage()) {
-    chrome.runtime.sendMessage({ type: "NO_TOS_DETECTED" });
-    return;
-  }
-
+  if (!isTosPage()) return;
   const text = extractText();
-  if (!text || text.length < 100) {
-    chrome.runtime.sendMessage({ type: "NO_TOS_DETECTED" });
-    return;
-  }
-
-  chrome.runtime.sendMessage({
-    type: "TOS_TEXT",
-    text,
-    domain: window.location.hostname,
-  });
+  if (!text || text.length < 100) return;
+  console.log("[ToS Reader] Auto-detected and extracted ToS text");
+  chrome.runtime.sendMessage({ type: "TOS_TEXT", text, domain: window.location.hostname });
 }
 
-run();
+setTimeout(run, 6000);
