@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from models.schemas import AnalyzeRequest, AnalyzeResponse
 from services.ai_service import analyze, RateLimitError
+from services.scoring_service import compute_score
 
 router = APIRouter()
 
@@ -20,9 +21,12 @@ async def analyze_tos(request: AnalyzeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
+    risk = compute_score(result["clauses"])
+
     return AnalyzeResponse(
         tldr=result["tldr"],
         clauses=result["clauses"],
         cached=result.get("cached", False),
         analyzed_at=datetime.now(timezone.utc).isoformat(),
+        risk=risk,
     )

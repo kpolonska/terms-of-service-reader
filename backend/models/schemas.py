@@ -46,8 +46,14 @@ class Clause(BaseModel):
     concept: str
 
 
+class RiskScore(BaseModel):
+    score: int   # 1–10, higher = more dangerous
+    label: str   # "SAFE" | "CAUTION" | "RISKY" | "DANGEROUS"
+
+
 class AnalyzeResponse(BaseModel):
     tldr: str
     clauses: list[Clause]
     cached: bool
     analyzed_at: str
+    risk: RiskScore
