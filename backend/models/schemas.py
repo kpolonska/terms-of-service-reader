@@ -26,6 +26,14 @@ VALID_CONCEPTS = {
 class AnalyzeRequest(BaseModel):
     text: str
     domain: str | None = None
+    profile: str = "general"
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, v: str) -> str:
+        if v not in {"general", "journalist", "activist", "business"}:
+            raise ValueError("Invalid profile.")
+        return v
 
     @field_validator("text")
     @classmethod
@@ -46,8 +54,54 @@ class Clause(BaseModel):
     concept: str
 
 
+class Alternative(BaseModel):
+    name: str
+    url: str
+    reason: str
+
+
+class ExplainRequest(BaseModel):
+    quote: str
+    category: str
+    profile: str = "general"
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, v: str) -> str:
+        if v not in {"general", "journalist", "activist", "business"}:
+            raise ValueError("Invalid profile.")
+        return v
+
+
+class ExplainResponse(BaseModel):
+    detailed_explanation: str
+    real_world_example: str
+    what_you_can_do: str
+
+
+class RiskScore(BaseModel):
+    score: int   # 1–10, higher = more dangerous
+    label: str   # "SAFE" | "CAUTION" | "RISKY" | "DANGEROUS"
+
+
+class ChangedClause(BaseModel):
+    category: str
+    direction: str  # "worse" | "better" | "new" | "removed"
+    previous_severity: str | None = None
+    current_severity: str | None = None
+
+
+class VersionDiff(BaseModel):
+    previous_analyzed_at: str
+    changed_clauses: list[ChangedClause]
+    has_changes: bool
+
+
 class AnalyzeResponse(BaseModel):
     tldr: str
     clauses: list[Clause]
     cached: bool
     analyzed_at: str
+    risk: RiskScore
+    alternatives: list[Alternative] = []
+    diff: VersionDiff | None = None

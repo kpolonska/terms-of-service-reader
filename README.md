@@ -40,12 +40,89 @@ Extension popup displays:
 
 ```
 terms-of-service-reader/
+├── website/            ← Landing page + web analysis tool (static HTML)
 ├── extension/          ← Chrome extension (Person A)
 ├── backend/            ← FastAPI server (Person B)
 ├── ai_pipeline/        ← Claude integration + cache (Person C)
 ├── .env.example        ← environment variable template
 └── .gitignore
 ```
+
+---
+
+## Quick start
+
+### Open the website (no backend needed)
+
+```bash
+open website/index.html
+```
+
+Or serve locally (better for testing):
+
+```bash
+cd website
+python3 -m http.server 3000
+# → http://localhost:3000
+```
+
+The landing page, features, and how-it-works sections are fully static. The "Try online" analysis panel requires the backend to be running.
+
+### Run the full stack
+
+**Step 1 — create `.env`:**
+
+```bash
+cp .env.example .env
+# fill in LLMAPI_KEY and LLMAPI_BASE_URL
+```
+
+**Step 2 — start the backend** (from `backend/` directory):
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+# → http://localhost:8000
+```
+
+Verify it works:
+```bash
+curl http://localhost:8000/health
+```
+
+**Step 3 — load the extension in Chrome:**
+
+1. Go to `chrome://extensions`
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked**
+4. Select the `extension/` folder
+
+**Step 4 — open the website:**
+
+```bash
+cd website
+python3 -m http.server 3000
+```
+
+Navigate to `http://localhost:3000`. The "Try online" panel now connects to `http://localhost:8000`.
+
+### API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/analyze` | Analyze ToS text |
+| `POST` | `/explain` | Deep-explain a clause |
+| `GET` | `/report/{domain}` | Download PDF report |
+| `GET` | `/stats` | Aggregated statistics |
+| `POST` | `/subscribe` | Subscribe to ToS change alerts |
+| `DELETE` | `/subscribe/{domain}` | Unsubscribe |
+| `GET` | `/subscriptions` | List subscribed domains |
+| `GET` | `/health` | Health check |
+
+Interactive API docs: `http://localhost:8000/docs`
 
 ---
 
@@ -137,6 +214,18 @@ Content-Type: application/json
 
 **concept** — one of:
 `Surveillance Capitalism (Zuboff)`, `Datafication (Van Dijck)`, `Platformization (Srnicek)`, `Algorithmic Opacity (Pasquale)`, `General Power Asymmetry`
+
+**risk** — object:
+```json
+{"score": 8, "label": "DANGEROUS"}
+```
+`score` is 1–10 (higher = more dangerous). `label` is one of `SAFE`, `CAUTION`, `RISKY`, `DANGEROUS`.
+
+**alternatives** — array of privacy-respecting alternatives, returned only when `risk.score >= 7`:
+```json
+[{"name": "Signal", "url": "signal.org", "reason": "End-to-end encrypted, no metadata collection."}]
+```
+Alternatives are **AI-generated dynamically** by Claude based on the domain and the specific privacy risks found in the ToS analysis. Results are cached in SQLite so each domain is only analyzed once — subsequent requests return the cached alternatives instantly at no extra cost.
 
 ---
 
@@ -431,24 +520,63 @@ Run the pipeline against Google, TikTok, and Meta ToS fragments and check:
 
 ## Running everything together locally
 
-Open three terminal windows:
-
 **Terminal 1 — Backend:**
 ```bash
 cd backend
-venv\Scripts\activate   # or source venv/bin/activate on Mac/Linux
+source venv/bin/activate      # Windows: venv\Scripts\activate
 uvicorn main:app --reload
+# Runs at http://localhost:8000
 ```
 
-**Terminal 2 — AI pipeline (only needed for manual testing):**
+**Terminal 2 — Website:**
 ```bash
-cd ai_pipeline
-venv\Scripts\activate
-python -c "from pipeline import analyze_tos; print('pipeline ready')"
+cd website
+python3 -m http.server 3000
+# Runs at http://localhost:3000
 ```
 
 **Terminal 3 — Extension:**
-No terminal needed. Load `extension/` in Chrome via `chrome://extensions` and test on a live ToS page.
+No extra server needed. Load `extension/` in Chrome via `chrome://extensions` → Load unpacked.
+
+The AI pipeline runs inside the backend process — no separate terminal needed. It is loaded automatically when the backend starts.
+
+### Test the analyze endpoint directly
+
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "We may collect your personal data and share it with advertising partners. We can terminate your account at any time for any reason.",
+    "domain": "example.com",
+    "profile": "general"
+  }'
+```
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `LLMAPI_KEY` | API key for LLMapi (Claude access) |
+| `LLMAPI_BASE_URL` | `https://api.llmapi.ai/v1` |
+| `DATABASE_PATH` | Path to SQLite DB (default: `ai_pipeline/analyses.db`) |
+
+---
+
+## Implemented features
+
+All 9 planned features are implemented. See `PLAN.md` for full technical breakdown.
+
+| # | Feature | Where |
+|---|---------|--------|
+| 1 | Risk scoring (1–10 + SAFE/CAUTION/RISKY/DANGEROUS) | `backend/services/scoring_service.py` |
+| 2 | Plain-English clause summaries | `ai_pipeline/prompt.py` |
+| 3 | Deep-explain mode per clause | `POST /explain`, `ai_pipeline/explain_prompt.py` |
+| 4 | PDF report export | `GET /report/{domain}`, `backend/services/report_service.py` |
+| 5 | Privacy alternatives (AI-generated, cached) | `backend/services/alternatives_service.py` |
+| 6 | User risk profiles (General / Journalist / Activist / Business) | `ai_pipeline/prompt.py` → `PROFILE_ADDITIONS` |
+| 7 | Statistics dashboard | `GET /stats`, `extension/popup/stats.html` |
+| 8 | Version diffing (detect ToS changes) | `backend/services/diff_service.py` |
+| 9 | Change alerts (subscribe + Chrome notifications) | `POST /subscribe`, `extension/background/service-worker.js` |
 
 ---
 

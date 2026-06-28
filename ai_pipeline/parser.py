@@ -1,7 +1,7 @@
 import json
 import re
 from pydantic import ValidationError
-from models import AnalysisResult
+from tos_models import AnalysisResult
 
 
 def parse_response(raw: str) -> dict:
