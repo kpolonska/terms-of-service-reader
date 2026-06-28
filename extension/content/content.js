@@ -11,45 +11,85 @@ function isTosPage() {
 
   const headings = [...document.querySelectorAll("h1, h2")];
   return headings.some((h) =>
-    TOS_HEADING_PHRASES.some((phrase) => h.innerText?.toLowerCase().includes(phrase))
+    TOS_HEADING_PHRASES.some((phrase) => h.textContent?.toLowerCase().includes(phrase))
   );
 }
 
 function extractText() {
-  const REMOVE_SELECTORS = ["nav", "header", "footer", "aside", ".cookie-banner", "[role='banner']", "[role='navigation']"];
+  const REMOVE_SELECTORS = [
+    "nav", "header", "footer", "aside",
+    "script", "style", "noscript",
+    ".cookie-banner", "[role='banner']", "[role='navigation']",
+    "svg", "img", "button",
+  ];
   const clone = document.body.cloneNode(true);
 
   REMOVE_SELECTORS.forEach((sel) => {
     clone.querySelectorAll(sel).forEach((el) => el.remove());
   });
 
-  const main =
+  let main =
     clone.querySelector("main") ||
     clone.querySelector("article") ||
-    clone.querySelector("[role='main']") ||
-    clone;
+    clone.querySelector("[role='main']");
 
-  const text = main.innerText || main.textContent || "";
+  if (!main) {
+    const divs = [...clone.querySelectorAll("div")].sort(
+      (a, b) => (b.textContent?.length || 0) - (a.textContent?.length || 0)
+    );
+    main = divs[0] || clone;
+  }
+
+  const text = main.textContent || "";
   return text.replace(/\s+/g, " ").trim().slice(0, MAX_TEXT_LENGTH);
 }
 
-function run() {
-  if (!isTosPage()) {
-    chrome.runtime.sendMessage({ type: "NO_TOS_DETECTED" });
-    return;
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "GET_TOS_TEXT") {
+    if (!isTosPage()) {
+      sendResponse({ text: null });
+      return true;
+    }
+    const text = extractText();
+    if (!text || text.length < 100) {
+      sendResponse({ text: null });
+      return true;
+    }
+    sendResponse({ text, domain: window.location.hostname });
+    return true;
   }
+});
 
+function run() {
+  if (!isTosPage()) return;
   const text = extractText();
   if (!text || text.length < 100) {
-    chrome.runtime.sendMessage({ type: "NO_TOS_DETECTED" });
-    return;
+    console.log("[ToS Reader] Text too short or missing, retrying...");
+    return false;
   }
-
-  chrome.runtime.sendMessage({
-    type: "TOS_TEXT",
-    text,
-    domain: window.location.hostname,
-  });
+  console.log("[ToS Reader] Auto-detected and extracted ToS text");
+  chrome.runtime.sendMessage({ type: "TOS_TEXT", text, domain: window.location.hostname });
+  return true;
 }
 
-run();
+let attempts = 0;
+const maxAttempts = 5;
+const interval = setInterval(() => {
+  if (run() || attempts >= maxAttempts) {
+    clearInterval(interval);
+  }
+  attempts++;
+}, 2000);
+
+const observer = new MutationObserver(() => {
+  if (run()) {
+    observer.disconnect();
+    clearInterval(interval);
+  }
+});
+
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  characterData: false,
+});

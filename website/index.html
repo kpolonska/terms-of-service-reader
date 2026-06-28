@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToS Reader: Stop Agreeing Blindly</title>
+  <meta name="description" content="AI-powered Chrome extension that reads Terms of Service so you don't have to. Instant risk scores, plain-English summaries, change alerts." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <span class="nav-logo-dot"></span>
+      ToS Reader
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#try">Try online</a>
+    </div>
+    <a href="#install" class="btn btn-primary btn-sm">Get extension</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-orb"></div>
+    <div class="hero-orb hero-orb-2"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Powered by Claude AI · Built at KSE
+      </div>
+      <h1 class="hero-title">
+        Stop agreeing<br />
+        <span class="gradient-text">blindly.</span>
+      </h1>
+      <p class="hero-sub">
+        ToS Reader scans Terms of Service pages in seconds and tells you exactly
+        what you're agreeing to: plain English, a risk score, and instant alerts
+        when the terms change.
+      </p>
+      <div class="hero-cta">
+        <a href="#install" class="btn btn-primary">Get extension →</a>
+        <a href="#try" class="btn btn-ghost">Try online</a>
+      </div>
+
+      <!-- Mock risk card -->
+      <div class="hero-demo">
+        <div class="demo-card">
+          <div class="demo-header">
+            <span class="demo-domain">facebook.com</span>
+            <span class="demo-tag">Analyzed just now</span>
+          </div>
+          <div class="demo-risk">
+            <div class="demo-score dangerous">8<span>/10</span></div>
+            <div>
+              <div class="demo-label">DANGEROUS</div>
+              <div class="demo-sub">High-risk Terms of Service</div>
+            </div>
+          </div>
+          <div class="demo-clauses">
+            <div class="clause-pill high">Behavioral profiling across all platforms</div>
+            <div class="clause-pill high">Third-party data sharing without opt-out</div>
+            <div class="clause-pill medium">Content ownership transferred on upload</div>
+            <div class="clause-pill low">Account termination at sole discretion</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num">9</span>
+        <span class="stat-label">AI features</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">1–10</span>
+        <span class="stat-label">Risk scoring</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Open source</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">4</span>
+        <span class="stat-label">User profiles</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-label">What it does</div>
+      <h2 class="section-title">Everything you need to<br /><span class="gradient-text">understand your rights.</span></h2>
+      <p class="section-sub">Nine AI-powered features built on Claude. The legal team you never had.</p>
+
+      <div class="features-grid">
+
+        <div class="feature-card feature-card-large">
+          <div class="feature-icon">◈</div>
+          <h3>Risk Scoring</h3>
+          <p>Every ToS gets a score from 1 (safe) to 10 (dangerous) based on clause severity, data-sharing scope, and category weights. Labels: SAFE · CAUTION · RISKY · DANGEROUS.</p>
+          <div class="feature-demo-score">
+            <span class="score-bar" style="--pct:30%" data-label="SAFE">3</span>
+            <span class="score-bar" style="--pct:50%" data-label="CAUTION">5</span>
+            <span class="score-bar" style="--pct:80%" data-label="RISKY">8</span>
+            <span class="score-bar" style="--pct:100%" data-label="DANGEROUS">10</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">◻</div>
+          <h3>Plain English</h3>
+          <p>Every flagged clause is rewritten in simple language. No law degree required.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3>Deep Explanation</h3>
+          <p>Click any clause for a deeper breakdown: real-world example, hidden implications, what you can do about it.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">◈</div>
+          <h3>Privacy Alternatives</h3>
+          <p>When risk is high (≥7), Claude suggests real privacy-respecting alternatives to the service, cached per domain so they load instantly.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">△</div>
+          <h3>Version Diffing</h3>
+          <p>When a site updates their ToS, see exactly what got worse or better since your last visit. Color-coded changes by clause.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">◎</div>
+          <h3>Change Alerts</h3>
+          <p>Subscribe to any domain. Get a browser notification the moment their Terms of Service change, even when you're not on the site.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⬡</div>
+          <h3>User Profiles</h3>
+          <p>Switch between General, Journalist, Activist, and Business profiles. The AI adjusts what it flags based on your risk exposure.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">▦</div>
+          <h3>PDF Reports</h3>
+          <p>Export a full PDF analysis report with risk score, clause table, and TLDR, ready to save or share.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">◳</div>
+          <h3>Analytics Dashboard</h3>
+          <p>Track which sites you've analyzed, average risk scores, most common clause types, and your analysis history.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section section-dark" id="install">
+    <div class="container">
+      <div class="section-label">Chrome extension</div>
+      <h2 class="section-title">Install in <span class="gradient-text">60 seconds.</span></h2>
+      <p class="section-sub">No Chrome Web Store needed. Load directly from the ZIP file — takes 3 steps.</p>
+
+      <div class="install-download">
+        <a href="tos-reader-extension.zip" download class="btn btn-primary btn-lg" id="download-btn">
+          ↓ Download extension ZIP
+        </a>
+        <span class="install-version">Chrome · Manifest V3 · Free</span>
+      </div>
+
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="install-step-num">1</div>
+          <div class="install-step-body">
+            <h3>Download &amp; unzip</h3>
+            <p>Click the button above to download <code>tos-reader-extension.zip</code>. Unzip it anywhere on your computer — you'll get a folder called <code>extension/</code>.</p>
+          </div>
+        </div>
+
+        <div class="install-connector"></div>
+
+        <div class="install-step">
+          <div class="install-step-num">2</div>
+          <div class="install-step-body">
+            <h3>Open Chrome extensions</h3>
+            <p>In Chrome, go to <code>chrome://extensions</code> (paste into address bar). Enable <strong>Developer mode</strong> using the toggle in the top-right corner.</p>
+            <div class="install-tip">💡 Developer mode lets you load extensions from your computer instead of the Chrome Web Store.</div>
+          </div>
+        </div>
+
+        <div class="install-connector"></div>
+
+        <div class="install-step">
+          <div class="install-step-num">3</div>
+          <div class="install-step-body">
+            <h3>Load the extension</h3>
+            <p>Click <strong>Load unpacked</strong> → select the <code>extension/</code> folder you unzipped. ToS Reader will appear in your extensions list.</p>
+            <p class="install-done">That's it. Pin it to your toolbar and visit any Terms of Service page.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-usage">
+        <div class="section-label" style="margin-bottom:20px">How to use it</div>
+        <div class="usage-grid">
+          <div class="usage-card">
+            <div class="usage-icon">🌐</div>
+            <h4>Auto-detect</h4>
+            <p>Go to any page with "terms", "privacy", or "legal" in the URL. The extension reads it automatically.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">🔍</div>
+            <h4>Click the badge</h4>
+            <p>Click the ToS Reader icon in your toolbar to open the popup with risk score, clauses, and summary.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">👤</div>
+            <h4>Pick your profile</h4>
+            <p>Switch between General, Journalist, Activist, or Business — the AI flags different risks for each.</p>
+          </div>
+          <div class="usage-card">
+            <div class="usage-icon">🔔</div>
+            <h4>Subscribe to changes</h4>
+            <p>Click Subscribe in the popup to get notified when the site updates its Terms of Service.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-note">
+        <strong>Requires local backend.</strong> The extension calls <code>localhost:8000</code>. Start it with:
+        <code class="install-cmd">cd backend &amp;&amp; source venv/bin/activate &amp;&amp; uvicorn main:app --reload</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACADEMIC CONTEXT -->
+  <section class="section">
+    <div class="container">
+      <div class="context-banner">
+        <div class="context-text">
+          <div class="section-label">Academic context</div>
+          <h2>Exploring <span class="gradient-text">Surveillance Capitalism</span> through AI</h2>
+          <p>ToS Reader is a research project for AI &amp; Society (AI390) at Kyiv School of Economics. Each flagged clause is linked to a theoretical framework, from Zuboff's Surveillance Capitalism to van Dijck's Datafication, making abstract academic concepts tangible.</p>
+          <div class="concepts">
+            <span class="concept-pill">Surveillance Capitalism</span>
+            <span class="concept-pill">Datafication</span>
+            <span class="concept-pill">Platformization</span>
+            <span class="concept-pill">Algorithmic Opacity</span>
+            <span class="concept-pill">Power Asymmetry</span>
+          </div>
+        </div>
+        <div class="context-visual">
+          <div class="concept-map">
+            <div class="cm-node cm-center">ToS<br/>Clause</div>
+            <div class="cm-node cm-top">Surveillance<br/>Capitalism</div>
+            <div class="cm-node cm-right">Datafication</div>
+            <div class="cm-node cm-bottom">Platformization</div>
+            <div class="cm-node cm-left">Opacity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRY ONLINE -->
+  <section class="section section-dark" id="try">
+    <div class="container">
+      <div class="section-label">No extension needed</div>
+      <h2 class="section-title">Try it <span class="gradient-text">right here.</span></h2>
+      <p class="section-sub">Paste any Terms of Service text and get an instant AI analysis. Same engine as the extension.</p>
+
+      <div class="app-panel">
+        <div class="app-input-side">
+          <div class="app-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Domain (optional)</label>
+                <input type="text" id="domain-input" placeholder="e.g. twitter.com" />
+              </div>
+              <div class="form-group">
+                <label>Profile</label>
+                <select id="profile-input">
+                  <option value="general">General</option>
+                  <option value="journalist">Journalist</option>
+                  <option value="activist">Activist</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Terms of Service text</label>
+              <div class="file-upload-area" id="file-upload-area">
+                <input type="file" id="file-input" accept=".txt,.pdf,.docx,.html,.htm" hidden />
+                <button type="button" class="file-upload-btn" id="file-upload-btn">
+                  <span class="file-upload-icon">↑</span>
+                  <span id="file-upload-label">Upload file (.txt, .pdf, .docx, .html)</span>
+                </button>
+                <button type="button" class="file-clear-btn hidden" id="file-clear-btn" title="Clear file">✕</button>
+                <span class="file-type-hint" id="file-type-hint">or paste text below</span>
+              </div>
+              <textarea id="tos-input" placeholder="Paste the Terms of Service or Privacy Policy text here...&#10;&#10;Minimum 100 characters. You can copy the text from any legal page."></textarea>
+            </div>
+            <button id="analyze-btn" class="btn btn-primary btn-full">
+              <span id="btn-text">Analyze →</span>
+              <span id="btn-loading" class="hidden">Analyzing…</span>
+            </button>
+            <p class="form-note">Connects to local backend (localhost:8000). Start with: <code>uvicorn main:app</code></p>
+          </div>
+        </div>
+
+        <div class="app-result-side">
+          <div id="result-empty" class="result-empty">
+            <div class="result-empty-icon">◈</div>
+            <p>Your analysis will appear here</p>
+            <p class="muted">Risk score, flagged clauses, plain-English summaries</p>
+          </div>
+
+          <div id="result-error" class="result-panel hidden">
+            <div class="result-error-msg">
+              <span class="error-icon">⚠</span>
+              <span id="error-text"></span>
+            </div>
+          </div>
+
+          <div id="result-data" class="result-panel hidden">
+            <div class="web-risk-badge" id="web-risk-badge">
+              <div class="web-risk-score" id="web-risk-score"></div>
+              <div class="web-risk-info">
+                <div class="web-risk-label" id="web-risk-label"></div>
+                <div class="web-risk-sub">Risk Score</div>
+              </div>
+              <div class="web-cached-tag hidden" id="web-cached">Cached</div>
+            </div>
+
+            <div class="web-tldr">
+              <div class="web-section-label">Summary</div>
+              <p id="web-tldr-text"></p>
+            </div>
+
+            <div class="web-alternatives hidden" id="web-alts">
+              <div class="web-section-label">Consider instead</div>
+              <div id="web-alts-list"></div>
+            </div>
+
+            <div class="web-clauses">
+              <div class="web-section-label">Key Clauses</div>
+              <div id="web-clauses-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo-dot"></span>
+        <strong>ToS Reader</strong>
+        <span class="footer-kse">· KSE AI390 Project</span>
+      </div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#try">Try online</a>
+        <a href="https://github.com/kpolonska/terms-of-service-reader" target="_blank">GitHub</a>
+      </div>
+      <div class="footer-copy">
+        Built by students at Kyiv School of Economics · 2026
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" integrity="sha512-sG5Q7boJL+ft/weuz6Mmi9XBD+bEzE9AI2FMP4YMFxp3FpTFUQSQQm5K5cSgJCyed6bWs3W8f8h0lp36lHXhQA==" crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+</body>
+</html>

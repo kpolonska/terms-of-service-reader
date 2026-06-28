@@ -9,34 +9,87 @@
   <body>
     <div id="app">
       <header>
-        <span class="logo">ToS Reader</span>
+        <span class="logo">
+          <span class="logo-dot"></span>
+          ToS Reader
+        </span>
+        <div class="header-right">
+          <select id="profile-select" class="profile-select" title="Your profile">
+            <option value="general">General</option>
+            <option value="journalist">Journalist</option>
+            <option value="activist">Activist</option>
+            <option value="business">Business</option>
+          </select>
+          <a href="stats.html" class="header-link">Stats</a>
+        </div>
       </header>
 
-      <!-- States -->
+      <!-- Loading -->
       <div id="state-loading" class="state hidden">
         <div class="spinner"></div>
-        <p>Analyzing Terms of Service...</p>
+        <p class="muted" style="text-align:center">Analyzing Terms of Service…</p>
       </div>
 
+      <!-- No ToS detected -->
       <div id="state-no-tos" class="state hidden">
         <p class="muted">No Terms of Service detected on this page.</p>
       </div>
 
+      <!-- Error -->
       <div id="state-error" class="state hidden">
         <p class="error-msg">Something went wrong.</p>
         <p id="error-detail" class="muted"></p>
       </div>
 
-      <div id="state-result" class="state hidden">
-        <section id="tldr-section">
-          <h2>Summary</h2>
-          <p id="tldr-text"></p>
-        </section>
+      <!-- Result -->
+      <div id="state-result" class="hidden">
 
-        <section id="clauses-section">
-          <h2>Key Clauses</h2>
-          <div id="clauses-list"></div>
-        </section>
+        <!-- Risk card -->
+        <div id="risk-badge" class="risk-card">
+          <div>
+            <div id="risk-score" class="risk-score-num"></div>
+          </div>
+          <div class="risk-info">
+            <div id="risk-label" class="risk-label-text"></div>
+            <div class="risk-sublabel">Risk Score</div>
+            <div class="risk-bar-wrap">
+              <div id="risk-bar" class="risk-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-body">
+
+          <!-- Subscribe -->
+          <div id="subscribe-row" class="hidden">
+            <button id="subscribe-btn" class="subscribe-btn"></button>
+          </div>
+
+          <!-- Version diff -->
+          <section id="diff-section" class="hidden">
+            <div class="section-label">What changed</div>
+            <div id="diff-list"></div>
+          </section>
+
+          <!-- TLDR -->
+          <section id="tldr-section">
+            <div class="section-label">Summary</div>
+            <p id="tldr-text"></p>
+          </section>
+
+          <!-- Alternatives -->
+          <section id="alternatives-section" class="hidden">
+            <div class="section-label">Consider instead</div>
+            <div id="alternatives-list"></div>
+          </section>
+
+          <!-- Clauses -->
+          <section id="clauses-section">
+            <div class="section-label">Key Clauses</div>
+            <div id="clauses-list"></div>
+          </section>
+
+        </div>
       </div>
     </div>
 

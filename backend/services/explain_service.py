@@ -11,25 +11,16 @@ if not os.environ.get("DATABASE_PATH") or os.environ["DATABASE_PATH"] == "analys
 
 sys.path.insert(0, str(_project_root / "ai_pipeline"))
 
-for _mod in ("tos_models", "prompt", "pipeline", "cache", "parser"):
-    sys.modules.pop(_mod, None)
-
-from pipeline import analyze_tos
+from pipeline import explain_clause
 import openai
 
-
-class RateLimitError(Exception):
-    pass
+from services.ai_service import RateLimitError
 
 
-def analyze(text: str, domain: str | None = None, profile: str = "general") -> dict:
+def explain(quote: str, category: str, profile: str = "general") -> dict:
     try:
-        return analyze_tos(text, domain, profile)
+        return explain_clause(quote, category, profile)
     except openai.RateLimitError as e:
         raise RateLimitError("Too many requests. Please wait and try again.") from e
     except (openai.APIConnectionError, openai.APITimeoutError) as e:
-        raise TimeoutError(f"AI service unreachable: {type(e).__name__}: {e}") from e
-    except openai.APIStatusError as e:
-        raise TimeoutError(f"AI service returned error {e.status_code}: {e.message}") from e
-    except Exception:
-        raise
+        raise TimeoutError("AI service is unreachable.") from e
