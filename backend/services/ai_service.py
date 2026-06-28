@@ -1,7 +1,8 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "ai_pipeline"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "ai_pipeline"))
+sys.modules.pop("models", None)  # evict backend/models/ namespace pkg so ai_pipeline/models.py wins
 
 from prompt import build_prompt
 from parser import parse_response
