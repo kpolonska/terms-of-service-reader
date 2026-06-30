@@ -124,6 +124,7 @@ body {
 
 /* ── Gradient text ── */
 .gradient-text {
+  color: var(--accent-2);
   background: linear-gradient(135deg, var(--accent-2), #e879f9);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1077,6 +1078,82 @@ body {
   border-top: 1px solid var(--border);
   margin-top: 12px;
   text-align: center;
+}
+
+/* ── Launcher buttons ── */
+.launcher-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 10px;
+}
+
+.launcher-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+
+.launcher-btn:hover {
+  background: rgba(124,58,237,0.12);
+  border-color: var(--accent);
+}
+
+.launcher-btn--dl {
+  border-style: dashed;
+}
+
+.launcher-os {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.launcher-file {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.launcher-prereq {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.launcher-prereq a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.launcher-prereq a:hover { text-decoration: underline; }
+
+/* ── Try-next CTA ── */
+.try-next {
+  margin-top: 40px;
+  padding: 28px 32px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: rgba(124,58,237,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.try-next-label {
+  font-size: 15px;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 220px;
 }
 
 /* ── Responsive ── */
