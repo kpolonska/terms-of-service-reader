@@ -7,6 +7,7 @@ from routes.stats import router as stats_router
 from routes.explain import router as explain_router
 from routes.report import router as report_router
 from routes.subscribe import router as subscribe_router
+from routes.root import router as root_router
 
 app = FastAPI(title="ToS Reader API", version="1.0.0")
 
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+app.include_router(root_router)
 app.include_router(analyze_router)
 app.include_router(health_router)
 app.include_router(stats_router)
