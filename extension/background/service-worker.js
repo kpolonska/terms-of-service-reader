@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000/analyze";
+const API_URL = "https://terms-of-service-reader.vercel.app/analyze";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab?.id;

@@ -1,4 +1,4 @@
-const EXPLAIN_URL = "http://localhost:8000/explain";
+const EXPLAIN_URL = "https://terms-of-service-reader.vercel.app/explain";
 
 async function handleExplain(clause, card, btn) {
   btn.disabled = true;
@@ -50,7 +50,7 @@ function renderExplanation(card, data) {
   card.appendChild(section);
 }
 
-const SUBSCRIBE_URL = "http://localhost:8000/subscribe";
+const SUBSCRIBE_URL = "https://terms-of-service-reader.vercel.app/subscribe";
 
 async function initSubscribeButton(domain) {
   const row = document.getElementById("subscribe-row");
@@ -273,7 +273,7 @@ function renderResult(data, domain) {
     downloadBtn.className = "download-btn";
     downloadBtn.textContent = "Download PDF Report";
     downloadBtn.addEventListener("click", () => {
-      chrome.tabs.create({ url: `http://localhost:8000/report/${domain}` });
+      chrome.tabs.create({ url: `https://terms-of-service-reader.vercel.app/report/${domain}` });
     });
     document.getElementById("clauses-section").appendChild(downloadBtn);
   }

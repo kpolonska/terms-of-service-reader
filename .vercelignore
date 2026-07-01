@@ -1,0 +1,44 @@
+# Extension is installed locally, not hosted
+extension/
+
+# Website is deployed as a separate Vercel project
+website/
+
+# Local dev / Docker stack
+Dockerfile
+docker-compose.yml
+.dockerignore
+start.bat
+start.command
+
+# Tests and samples don't need to ship
+ai_pipeline/tests/
+backend/tests/
+
+# Docs
+CLAUDE.md
+PLAN.md
+README.md
+*.md
+
+# Local SQLite artifacts
+*.db
+*.db-journal
+*.sqlite
+
+# Local .env — Vercel env vars set via dashboard/CLI must win, so exclude local .env
+.env
+.env.local
+.env.*.local
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
