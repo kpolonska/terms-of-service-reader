@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000/stats";
+const API_URL = "https://terms-of-service-reader.vercel.app/stats";
 
 const BAR_COLOR = "#1e2952";
 const SEVERITY_COLORS = { high: "#991b1b", medium: "#92400e", low: "#065f46" };
