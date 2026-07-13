@@ -48,49 +48,8 @@ function extractText() {
 const HIGHLIGHT_NAME = "tos-reader-highlight";
 let activeHighlightMark = null;
 
-// The AI is told to copy quotes verbatim, but it (and the source page) can still
-// disagree on typographically-equivalent characters — curly vs straight quotes,
-// en/em dashes, ellipses. Canonicalize both sides to the same plain-ASCII form so
-// those differences don't silently break matching. One-to-one char mapping only,
-// so offsets into the raw text stay valid.
-const CHAR_EQUIVALENTS = {
-  "‘": "'", "’": "'", "‚": "'", "‛": "'", "ʼ": "'", "´": "'", "`": "'",
-  "“": '"', "”": '"', "„": '"', "‟": '"',
-  "–": "-", "—": "-", "−": "-", "‑": "-", "‒": "-",
-  "…": ".",
-  "­": "", // soft hyphen — invisible line-break hint, not real content
-};
-
-// Returns the canonical form of a character, or "" if it should be dropped
-// entirely (e.g. a soft hyphen). Never returns more than one character, so the
-// raw-offset mapping in findQuoteRange stays one-to-one.
-function canonicalizeChar(ch) {
-  return ch in CHAR_EQUIVALENTS ? CHAR_EQUIVALENTS[ch] : ch;
-}
-
 function normalizeForMatch(s) {
-  let out = "";
-  for (const ch of s) {
-    if (/\s/.test(ch)) {
-      if (out.length && out[out.length - 1] !== " ") out += " ";
-    } else {
-      out += canonicalizeChar(ch);
-    }
-  }
-  return out.trim();
-}
-
-// Given the full normalized quote, produce looser fallback candidates to try if the
-// exact quote isn't found verbatim on the page (the AI occasionally drops/rewords a
-// boundary word despite instructions). Each is tried in order; first hit wins.
-function buildMatchCandidates(normalizedQuote) {
-  const candidates = [normalizedQuote];
-  const words = normalizedQuote.split(" ").filter(Boolean);
-  if (words.length > 6) {
-    candidates.push(words.slice(1, -1).join(" ")); // drop first & last word
-    candidates.push(words.slice(0, 10).join(" ")); // anchor on the first ~10 words
-  }
-  return candidates;
+  return s.replace(/\s+/g, " ").trim();
 }
 
 const REMOVE_SELECTOR_STRING = REMOVE_SELECTORS.join(", ");
@@ -140,11 +99,8 @@ function findQuoteRange(quote) {
         }
         i = j;
       } else {
-        const canon = canonicalizeChar(raw[i]);
-        if (canon) {
-          normText += canon;
-          rawOffsets.push(i);
-        }
+        normText += raw[i];
+        rawOffsets.push(i);
         i++;
       }
     }
@@ -157,6 +113,10 @@ function findQuoteRange(quote) {
   const normalizedQuote = normalizeForMatch(quote);
   if (!normalizedQuote) return null;
 
+  const startIdx = fullText.indexOf(normalizedQuote);
+  if (startIdx === -1) return null;
+  const endIdx = startIdx + normalizedQuote.length - 1; // inclusive
+
   const locate = (pos) => {
     for (const seg of segments) {
       const segLen = seg.rawOffsets.length;
@@ -167,90 +127,14 @@ function findQuoteRange(quote) {
     return null;
   };
 
-  const toRange = (startIdx, endIdx) => {
-    const startLoc = locate(startIdx);
-    const endLoc = locate(endIdx);
-    if (!startLoc || !endLoc) return null;
-    const range = document.createRange();
-    range.setStart(startLoc.node, startLoc.offset);
-    range.setEnd(endLoc.node, endLoc.offset + 1);
-    return range;
-  };
+  const startLoc = locate(startIdx);
+  const endLoc = locate(endIdx);
+  if (!startLoc || !endLoc) return null;
 
-  // Tier 1: exact (or boundary-trimmed) substring match — fast and pixel-precise
-  // when the AI copied the quote verbatim (the common case).
-  for (const candidate of buildMatchCandidates(normalizedQuote)) {
-    if (!candidate) continue;
-    const startIdx = fullText.indexOf(candidate);
-    if (startIdx === -1) continue;
-    const range = toRange(startIdx, startIdx + candidate.length - 1);
-    if (range) return range;
-  }
-
-  // Tier 2: fuzzy word-overlap search. Catches cases where the AI silently altered
-  // capitalization, fixed a typo, or swapped a word somewhere in the MIDDLE of the
-  // quote — differences tier 1 can't recover from since it only tolerates edits at
-  // the quote's start/end. Slides a window across the page's words and scores it by
-  // how many quote words it contains (order-independent, so word swaps don't hurt).
-  return fuzzyFindRange(fullText, normalizedQuote, toRange);
-}
-
-function tokenizeWords(text) {
-  const words = [];
-  const re = /\S+/g;
-  let m;
-  while ((m = re.exec(text))) {
-    words.push({ lower: m[0].toLowerCase(), start: m.index, end: m.index + m[0].length });
-  }
-  return words;
-}
-
-const FUZZY_MATCH_THRESHOLD = 0.6;
-
-function fuzzyFindRange(fullText, normalizedQuote, toRange) {
-  const pageWords = tokenizeWords(fullText);
-  const quoteWords = tokenizeWords(normalizedQuote).map((w) => w.lower);
-  if (quoteWords.length < 3 || pageWords.length < quoteWords.length) return null;
-
-  const L = quoteWords.length;
-  let bestScore = 0;
-  let bestStart = -1;
-  let bestLen = L;
-
-  // Try window lengths near the quote's word count to tolerate a small amount of
-  // word insertion/deletion drift, not just substitution.
-  for (let delta = -2; delta <= 2; delta++) {
-    const winLen = L + delta;
-    if (winLen < 3 || winLen > pageWords.length) continue;
-
-    for (let i = 0; i + winLen <= pageWords.length; i++) {
-      const bag = new Map();
-      for (let k = 0; k < winLen; k++) {
-        const w = pageWords[i + k].lower;
-        bag.set(w, (bag.get(w) || 0) + 1);
-      }
-      let matches = 0;
-      for (const qw of quoteWords) {
-        const c = bag.get(qw) || 0;
-        if (c > 0) {
-          matches++;
-          bag.set(qw, c - 1);
-        }
-      }
-      const score = matches / L;
-      if (score > bestScore) {
-        bestScore = score;
-        bestStart = i;
-        bestLen = winLen;
-      }
-    }
-  }
-
-  if (bestScore < FUZZY_MATCH_THRESHOLD || bestStart === -1) return null;
-
-  const startWord = pageWords[bestStart];
-  const endWord = pageWords[bestStart + bestLen - 1];
-  return toRange(startWord.start, endWord.end - 1);
+  const range = document.createRange();
+  range.setStart(startLoc.node, startLoc.offset);
+  range.setEnd(endLoc.node, endLoc.offset + 1);
+  return range;
 }
 
 function ensureHighlightStyle() {
