@@ -50,7 +50,9 @@ class Clause(BaseModel):
     quote: str
     plain_english: str
     category: str
+    category_label: str = ""
     severity: Literal["low", "medium", "high"]
+    severity_label: str = ""
     concept: str
 
 
@@ -81,7 +83,8 @@ class ExplainResponse(BaseModel):
 
 class RiskScore(BaseModel):
     score: int   # 1–10, higher = more dangerous
-    label: str   # "SAFE" | "CAUTION" | "RISKY" | "DANGEROUS"
+    label: str   # canonical code: "SAFE" | "CAUTION" | "RISKY" | "DANGEROUS" (used for styling)
+    label_translated: str = ""  # display label, translated into the document's detected language
 
 
 class ChangedClause(BaseModel):
@@ -99,6 +102,7 @@ class VersionDiff(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     tldr: str
+    language: str = "en"
     clauses: list[Clause]
     cached: bool
     analyzed_at: str

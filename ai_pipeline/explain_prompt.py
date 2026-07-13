@@ -40,6 +40,11 @@ Companies write Terms of Service in deliberately complex language to obscure wha
 - Think about worst-case scenarios the company could invoke using this clause.
 - Treat vague language as intentional — companies use vagueness to maximize their own flexibility.
 
+## Language
+Detect the language of the clause text quoted below. Write your entire response — every field —
+in THAT SAME language. If the quote is in English, respond in English; if it is in Ukrainian, respond
+entirely in Ukrainian, and so on for any language.
+
 ## Output format
 Return ONLY valid JSON — no text before or after, no markdown, no explanation outside the JSON.
 

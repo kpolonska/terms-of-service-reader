@@ -217,7 +217,7 @@ function renderResult(data, domain) {
     const label = data.risk.label.toLowerCase();
     card.className = `risk-card risk-${label}`;
     document.getElementById("risk-score").textContent = `${data.risk.score}/10`;
-    document.getElementById("risk-label").textContent = data.risk.label;
+    document.getElementById("risk-label").textContent = data.risk.label_translated || data.risk.label;
     const bar = document.getElementById("risk-bar");
     if (bar) bar.style.width = `${(data.risk.score / 10) * 100}%`;
   }
@@ -252,8 +252,8 @@ function renderResult(data, domain) {
       return span;
     };
 
-    meta.appendChild(makeBadge(clause.category.replaceAll("_", " ")));
-    meta.appendChild(makeBadge(clause.severity.toUpperCase(), "severity-badge"));
+    meta.appendChild(makeBadge(clause.category_label || clause.category.replaceAll("_", " ")));
+    meta.appendChild(makeBadge((clause.severity_label || clause.severity).toUpperCase(), "severity-badge"));
     meta.appendChild(makeBadge(clause.concept, "concept"));
 
     const explainBtn = document.createElement("button");

@@ -28,16 +28,35 @@ Do NOT shorten "Surveillance Capitalism (Zuboff)" to "Surveillance Capitalism".
 Do NOT shorten "Datafication (Van Dijck)" to "Datafication". Same for all others.
 Allowed values (copy verbatim):
 {chr(10).join(f'- "{c}"' for c in CONCEPTS)}
+Leave the concept name itself in its original form (do not translate the author's name or the term)
+even when writing in a non-English language — these are established academic terms.
+
+## Language
+Detect the language the ToS document itself is written in. Every piece of natural-language text you
+generate — "tldr", "plain_english", "category_label", "severity_label", and the values inside
+"risk_labels" — MUST be written in THAT SAME language, not English (unless the document is already
+in English). Do NOT translate "quote" — it must remain the verbatim original excerpt from the document.
+Do NOT translate "category" or "severity" — those are fixed internal codes and must stay in English exactly
+as listed above.
 
 ## Output format (strict JSON, no extra keys)
 {{
-  "tldr": "<2-3 sentence plain-English summary of the whole document>",
+  "tldr": "<2-3 sentence summary of the whole document, written in the document's own language>",
+  "language": "<ISO 639-1 code of the document's language, lowercase, e.g. \\"en\\", \\"uk\\", \\"es\\", \\"fr\\">",
+  "risk_labels": {{
+    "safe": "<translation of the word 'Safe' into the document's language>",
+    "caution": "<translation of the word 'Caution' into the document's language>",
+    "risky": "<translation of the word 'Risky' into the document's language>",
+    "dangerous": "<translation of the word 'Dangerous' into the document's language>"
+  }},
   "clauses": [
     {{
-      "quote": "<verbatim excerpt from the ToS, max 200 chars>",
-      "plain_english": "<one sentence explanation a teenager would understand>",
-      "category": "<one of the categories above>",
-      "severity": "<low | medium | high>",
+      "quote": "<verbatim excerpt from the ToS, max 200 chars, in the ORIGINAL language — do not translate>",
+      "plain_english": "<one sentence explanation a teenager would understand, in the document's language>",
+      "category": "<one of the categories above, EXACT English code, never translated>",
+      "category_label": "<human-readable name of the category, translated into the document's language>",
+      "severity": "<low | medium | high, EXACT English code, never translated>",
+      "severity_label": "<the word for the severity, translated into the document's language>",
       "concept": "<one of the concepts above>"
     }}
   ]

@@ -24,12 +24,16 @@ async def analyze_tos(request: AnalyzeRequest):
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
     risk = compute_score(result["clauses"])
+    risk_labels = result.get("risk_labels", {})
+    risk["label_translated"] = risk_labels.get(risk["label"].lower(), risk["label"].capitalize())
+
     categories = [c.get("category", "") for c in result["clauses"]]
     alternatives = get_alternatives(request.domain, risk["score"], result.get("tldr", ""), categories)
     diff = compute_diff(request.domain) if request.domain else None
 
     return AnalyzeResponse(
         tldr=result["tldr"],
+        language=result.get("language", "en"),
         clauses=result["clauses"],
         cached=result.get("cached", False),
         analyzed_at=datetime.now(timezone.utc).isoformat(),
