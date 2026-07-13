@@ -9,12 +9,17 @@ Your job is to suggest concrete, real alternatives to a service whose Terms of S
 - Suggest 2 to 4 alternatives. Fewer is better if the alternatives are genuinely good.
 - Return ONLY valid JSON array — no text outside the JSON.
 
+## Language
+The "What their Terms of Service say" summary below is written in a specific language. Detect that
+language and write the "reason" field in that SAME language. Keep "name" and "url" as their real,
+untranslated proper names (service names and domains are never translated).
+
 ## Output format (strict JSON array, no extra keys)
 [
   {
     "name": "<service name>",
     "url": "<domain only, e.g. signal.org>",
-    "reason": "<one sentence: specific privacy advantage over the analyzed service>"
+    "reason": "<one sentence: specific privacy advantage over the analyzed service, in the summary's language>"
   }
 ]"""
 

@@ -152,7 +152,7 @@ function renderRisk(risk) {
   const label_lc = risk.label.toLowerCase();
   badge.className = `web-risk-badge risk-${label_lc}`;
   score.textContent = `${risk.score}/10`;
-  label.textContent = risk.label;
+  label.textContent = risk.label_translated || risk.label;
 }
 
 function renderAlternatives(alts) {
@@ -197,8 +197,8 @@ function renderClauses(clauses) {
       return span;
     };
 
-    meta.appendChild(makeBadge(clause.category.replaceAll("_", " ")));
-    meta.appendChild(makeBadge(clause.severity.toUpperCase()));
+    meta.appendChild(makeBadge(clause.category_label || clause.category.replaceAll("_", " ")));
+    meta.appendChild(makeBadge((clause.severity_label || clause.severity).toUpperCase()));
     if (clause.concept) meta.appendChild(makeBadge(clause.concept));
 
     card.appendChild(plain);

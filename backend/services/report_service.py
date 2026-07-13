@@ -55,6 +55,7 @@ def generate_pdf(domain: str) -> bytes:
     analyzed_at = record["analyzed_at"]
     clauses = result.get("clauses", [])
     risk = compute_score(clauses)
+    risk_label_display = result.get("risk_labels", {}).get(risk["label"].lower(), risk["label"])
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -89,7 +90,7 @@ def generate_pdf(domain: str) -> bytes:
             [[
                 Paragraph(f"{risk['score']}/10", ParagraphStyle("rscore", fontSize=22, fontName="Helvetica-Bold", textColor=risk_color)),
                 Paragraph(
-                    f"<b>{risk['label']}</b><br/><font size=8 color='#888888'>Risk Score</font>",
+                    f"<b>{risk_label_display}</b><br/><font size=8 color='#888888'>Risk Score</font>",
                     ParagraphStyle("rlabel", fontSize=13, textColor=risk_color, leading=18),
                 ),
             ]],
@@ -138,11 +139,13 @@ def generate_pdf(domain: str) -> bytes:
 
     for i, clause in enumerate(clauses, start=1):
         sev = clause.get("severity", "low")
+        category_label = clause.get("category_label") or clause.get("category", "").replace("_", " ")
+        severity_label = clause.get("severity_label") or sev.upper()
         table_data.append([
             Paragraph(f'"{clause.get("quote", "")}"', cell_style),
             Paragraph(clause.get("plain_english", ""), cell_style),
-            Paragraph(clause.get("category", "").replace("_", " "), cell_style),
-            Paragraph(sev.upper(), cell_style),
+            Paragraph(category_label, cell_style),
+            Paragraph(severity_label, cell_style),
             Paragraph(clause.get("concept", ""), cell_style),
         ])
         bg = SEVERITY_COLORS.get(sev)
