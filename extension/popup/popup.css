@@ -331,6 +331,21 @@ header {
   font-style: italic;
   margin-bottom: 4px;
   line-height: 1.4;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.12s, color 0.12s;
+}
+
+.clause-quote:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.clause-quote.quote-not-found {
+  color: var(--dangerous-text, #b91c1c);
+  background: none;
+  text-decoration: none;
 }
 
 .clause-plain {

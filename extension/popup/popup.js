@@ -50,6 +50,30 @@ function renderExplanation(card, data) {
   card.appendChild(section);
 }
 
+async function highlightOnPage(quote) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return false;
+
+  const send = () =>
+    new Promise((resolve) => {
+      chrome.tabs.sendMessage(tab.id, { type: "HIGHLIGHT_QUOTE", quote }, (resp) => {
+        if (chrome.runtime.lastError) resolve(null);
+        else resolve(resp);
+      });
+    });
+
+  let resp = await send();
+  if (!resp) {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content/content.js"] });
+      resp = await send();
+    } catch {
+      return false;
+    }
+  }
+  return resp?.found ?? false;
+}
+
 const SUBSCRIBE_URL = "http://localhost:8000/subscribe";
 
 async function initSubscribeButton(domain) {
@@ -237,6 +261,15 @@ function renderResult(data, domain) {
     const quote = document.createElement("p");
     quote.className = "clause-quote";
     quote.textContent = `"${clause.quote}"`;
+    quote.title = "Click to find this text on the page";
+    quote.addEventListener("click", async () => {
+      const found = await highlightOnPage(clause.quote);
+      if (!found) {
+        quote.classList.add("quote-not-found");
+        quote.title = "Couldn't find this text on the page (it may have changed)";
+        setTimeout(() => quote.classList.remove("quote-not-found"), 1500);
+      }
+    });
 
     const plain = document.createElement("p");
     plain.className = "clause-plain";
