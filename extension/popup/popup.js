@@ -237,6 +237,15 @@ function renderResult(data, domain) {
     const quote = document.createElement("p");
     quote.className = "clause-quote";
     quote.textContent = `"${clause.quote}"`;
+    quote.title = "Click to find this text on the page";
+    quote.addEventListener("click", async () => {
+      const found = await highlightOnPage(clause.quote);
+      if (!found) {
+        quote.classList.add("quote-not-found");
+        quote.title = "Couldn't find this text on the page (it may have changed)";
+        setTimeout(() => quote.classList.remove("quote-not-found"), 1500);
+      }
+    });
 
     const plain = document.createElement("p");
     plain.className = "clause-plain";
