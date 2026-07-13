@@ -50,6 +50,30 @@ function renderExplanation(card, data) {
   card.appendChild(section);
 }
 
+async function highlightOnPage(quote) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return false;
+
+  const send = () =>
+    new Promise((resolve) => {
+      chrome.tabs.sendMessage(tab.id, { type: "HIGHLIGHT_QUOTE", quote }, (resp) => {
+        if (chrome.runtime.lastError) resolve(null);
+        else resolve(resp);
+      });
+    });
+
+  let resp = await send();
+  if (!resp) {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content/content.js"] });
+      resp = await send();
+    } catch {
+      return false;
+    }
+  }
+  return resp?.found ?? false;
+}
+
 const SUBSCRIBE_URL = "https://terms-of-service-reader.vercel.app/subscribe";
 
 async function initSubscribeButton(domain) {
